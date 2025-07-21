@@ -44,48 +44,6 @@ export const HeroSection = () => {
             </Button>
           </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
-            <div className="text-center">
-              <div className="mb-2 flex justify-center">
-                <div className="rounded-full bg-primary/10 p-3">
-                  <Users className="h-6 w-6 text-primary" />
-                </div>
-              </div>
-              <div className="text-2xl font-bold text-foreground">2,547</div>
-              <div className="text-sm text-muted-foreground">Community Members</div>
-            </div>
-            
-            <div className="text-center">
-              <div className="mb-2 flex justify-center">
-                <div className="rounded-full bg-accent/10 p-3">
-                  <Recycle className="h-6 w-6 text-accent" />
-                </div>
-              </div>
-              <div className="text-2xl font-bold text-foreground">8,932</div>
-              <div className="text-sm text-muted-foreground">Items Shared</div>
-            </div>
-            
-            <div className="text-center">
-              <div className="mb-2 flex justify-center">
-                <div className="rounded-full bg-success/10 p-3">
-                  <TrendingUp className="h-6 w-6 text-success" />
-                </div>
-              </div>
-              <div className="text-2xl font-bold text-foreground">€15,420</div>
-              <div className="text-sm text-muted-foreground">Money Saved</div>
-            </div>
-            
-            <div className="text-center">
-              <div className="mb-2 flex justify-center">
-                <div className="rounded-full bg-warning/10 p-3">
-                  <Heart className="h-6 w-6 text-warning" />
-                </div>
-              </div>
-              <div className="text-2xl font-bold text-foreground">4.8/5</div>
-              <div className="text-sm text-muted-foreground">Community Rating</div>
-            </div>
-          </div>
         </div>
       </div>
     </section>
