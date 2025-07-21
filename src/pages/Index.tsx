@@ -3,6 +3,7 @@ import { Header } from "@/components/layout/Header";
 import { HeroSection } from "@/components/layout/HeroSection";
 import { CategoryFilter } from "@/components/layout/CategoryFilter";
 import { ItemCard } from "@/components/items/ItemCard";
+import { useItems } from "@/hooks/useItems";
 
 // Mock data for initial demonstration
 const mockItems = [
@@ -58,10 +59,20 @@ const mockItems = [
 
 const Index = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const { items, loading, error } = useItems(selectedCategory);
 
-  const filteredItems = selectedCategory === "all" 
-    ? mockItems 
-    : mockItems.filter(item => item.category === selectedCategory);
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <p className="text-destructive">Error loading items: {error}</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -81,14 +92,42 @@ const Index = () => {
                 {selectedCategory === "all" ? "All Items" : `${selectedCategory} Items`}
               </h2>
               <div className="text-sm text-muted-foreground">
-                {filteredItems.length} items found
+                {items.length} items found
               </div>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredItems.map((item) => (
-                <ItemCard key={item.id} {...item} />
-              ))}
+              {loading ? (
+                <div className="col-span-full text-center py-8">
+                  <p>Loading items...</p>
+                </div>
+              ) : items.length === 0 ? (
+                <div className="col-span-full text-center py-8">
+                  <p>No items found in this category.</p>
+                </div>
+              ) : (
+                items.map((item) => (
+                  <ItemCard 
+                    key={item.id} 
+                    id={item.id}
+                    title={item.title}
+                    description={item.description || ''}
+                    category={item.category}
+                    condition={item.condition}
+                    listingType={item.listing_type}
+                    salePrice={item.sale_price}
+                    rentalPrice={item.rental_price}
+                    rentalPeriod={item.rental_period}
+                    location="Location not set"
+                    imageUrl={item.item_images?.[0]?.image_url || "/placeholder.svg"}
+                    ownerName={item.profiles?.display_name || 'Unknown User'}
+                    ownerAvatar={item.profiles?.avatar_url}
+                    ownerRating={item.profiles?.rating || 0}
+                    createdAt={item.created_at}
+                    isFavorited={false}
+                  />
+                ))
+              )}
             </div>
           </div>
         </div>

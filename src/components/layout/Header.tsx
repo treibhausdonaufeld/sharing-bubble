@@ -90,6 +90,7 @@ export const Header = () => {
                   variant="community" 
                   size="sm"
                   className="gap-2"
+                  onClick={() => navigate("/list-item")}
                 >
                   <Plus className="h-4 w-4" />
                   <span className="hidden sm:inline">Share Item</span>
