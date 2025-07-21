@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
@@ -12,12 +12,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { ImageUpload } from '@/components/items/ImageUpload';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { ArrowLeft } from 'lucide-react';
 
 const ListItem = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useLanguage();
+  const [searchParams] = useSearchParams();
+  const editItemId = searchParams.get('edit');
   const [loading, setLoading] = useState(false);
+  const [loadingItem, setLoadingItem] = useState(!!editItemId);
   const [images, setImages] = useState<{ url: string; file: File }[]>([]);
   const [formData, setFormData] = useState({
     title: '',
@@ -35,9 +41,76 @@ const ListItem = () => {
     'tools', 'kitchen', 'garden', 'toys', 'vehicles', 'other'
   ];
 
-  const conditions = ['new', 'used', 'broken'];
+  const conditions = ['new', 'like_new', 'good', 'fair', 'poor'];
   const listingTypes = ['sell', 'rent', 'both'];
   const rentalPeriods = ['hourly', 'daily', 'weekly'];
+
+  // Load existing item data if editing
+  useEffect(() => {
+    const loadItemForEdit = async () => {
+      if (!editItemId || !user) return;
+      
+      setLoadingItem(true);
+      try {
+        const { data: item, error } = await supabase
+          .from('items')
+          .select(`
+            *,
+            item_images (
+              id,
+              image_url,
+              display_order,
+              is_primary
+            )
+          `)
+          .eq('id', editItemId)
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (error) throw error;
+        
+        if (!item) {
+          toast({
+            title: "Error",
+            description: "Item not found or you don't have permission to edit it.",
+            variant: "destructive",
+          });
+          navigate('/');
+          return;
+        }
+
+        // Populate form with existing data
+        setFormData({
+          title: item.title || '',
+          description: item.description || '',
+          category: item.category || '',
+          condition: item.condition || '',
+          listing_type: item.listing_type || '',
+          sale_price: item.sale_price?.toString() || '',
+          rental_price: item.rental_price?.toString() || '',
+          rental_period: item.rental_period || ''
+        });
+
+        // Load existing images (for display only - editing images not implemented yet)
+        if (item.item_images && item.item_images.length > 0) {
+          // Note: These are existing images, not new uploads
+          // For simplicity, we'll show them but not allow editing them yet
+        }
+      } catch (error) {
+        console.error('Error loading item:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load item data.",
+          variant: "destructive",
+        });
+        navigate('/');
+      } finally {
+        setLoadingItem(false);
+      }
+    };
+
+    loadItemForEdit();
+  }, [editItemId, user, navigate, toast]);
 
   const uploadImages = async (itemId: string) => {
     const uploadPromises = images.map(async (image, index) => {
@@ -69,55 +142,89 @@ const ListItem = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to list an item.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setLoading(true);
+    
     try {
-      const itemData: Database['public']['Tables']['items']['Insert'] = {
+      const itemData = {
+        user_id: user.id,
         title: formData.title,
         description: formData.description,
         category: formData.category as Database['public']['Enums']['item_category'],
         condition: formData.condition as Database['public']['Enums']['item_condition'],
         listing_type: formData.listing_type as Database['public']['Enums']['listing_type'],
-        user_id: user.id,
-        status: 'available',
-        ...(formData.listing_type !== 'rent' && { sale_price: parseFloat(formData.sale_price) }),
-        ...(formData.listing_type !== 'sell' && {
-          rental_price: parseFloat(formData.rental_price),
-          rental_period: formData.rental_period as Database['public']['Enums']['rental_period']
-        })
+        sale_price: formData.sale_price ? parseFloat(formData.sale_price) : null,
+        rental_price: formData.rental_price ? parseFloat(formData.rental_price) : null,
+        rental_period: formData.rental_period as Database['public']['Enums']['rental_period'] || null,
+        status: 'available' as Database['public']['Enums']['item_status']
       };
 
-      const { data, error } = await supabase
-        .from('items')
-        .insert(itemData)
-        .select()
-        .single();
+      let result;
+      
+      if (editItemId) {
+        // Update existing item
+        result = await supabase
+          .from('items')
+          .update(itemData)
+          .eq('id', editItemId)
+          .eq('user_id', user.id)
+          .select()
+          .single();
+      } else {
+        // Create new item
+        result = await supabase
+          .from('items')
+          .insert(itemData)
+          .select()
+          .single();
+      }
 
-      if (error) throw error;
+      if (result.error) throw result.error;
 
-      // Upload images if any
+      const item = result.data;
+
+      // Upload images only for new items or if new images were added
       if (images.length > 0) {
-        await uploadImages(data.id);
+        await uploadImages(item.id);
       }
 
       toast({
         title: "Success",
-        description: "Item listed successfully!",
+        description: editItemId ? "Item updated successfully!" : "Item listed successfully!",
       });
-      
+
       navigate('/');
     } catch (error) {
-      console.error('Error listing item:', error);
+      console.error('Error saving item:', error);
       toast({
         title: "Error",
-        description: "Failed to list item. Please try again.",
+        description: editItemId ? "Failed to update item." : "Failed to list item.",
         variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
   };
+
+  if (loadingItem) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">{t('common.loading')}</div>
+        </div>
+      </div>
+    );
+  }
 
   if (!user) {
     navigate('/auth');
@@ -127,15 +234,25 @@ const ListItem = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="container mx-auto px-4 py-8">
-        <Card className="max-w-2xl mx-auto">
+      <div className="container mx-auto max-w-2xl px-4 py-8">
+        {/* Back Button */}
+        <Button 
+          variant="ghost" 
+          onClick={() => navigate("/")}
+          className="mb-6 gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          {t('common.back')}
+        </Button>
+
+        <Card>
           <CardHeader>
-            <CardTitle>List New Item</CardTitle>
+            <CardTitle>{editItemId ? t('itemDetail.editItem') : t('listItem.title')}</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="title">Title</Label>
+                <Label htmlFor="title">{t('listItem.itemName')}</Label>
                 <Input
                   id="title"
                   value={formData.title}
@@ -146,27 +263,27 @@ const ListItem = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description">{t('listItem.description')}</Label>
                 <Textarea
                   id="description"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Describe your item"
+                  placeholder={t('listItem.descriptionPlaceholder')}
                   rows={4}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Category</Label>
-                  <Select onValueChange={(value) => setFormData({ ...formData, category: value as Database['public']['Enums']['item_category'] })}>
+                  <Label>{t('listItem.selectCategory')}</Label>
+                  <Select value={formData.category} onValueChange={(value) => setFormData({...formData, category: value as Database['public']['Enums']['item_category']})}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select category" />
+                      <SelectValue placeholder={t('listItem.selectCategory')} />
                     </SelectTrigger>
                     <SelectContent>
                       {categories.map((category) => (
                         <SelectItem key={category} value={category}>
-                          {category.replace('_', ' ').charAt(0).toUpperCase() + category.slice(1)}
+                          {t(`category.${category}`)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -174,15 +291,15 @@ const ListItem = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Condition</Label>
-                  <Select onValueChange={(value) => setFormData({ ...formData, condition: value as Database['public']['Enums']['item_condition'] })}>
+                  <Label>{t('listItem.selectCondition')}</Label>
+                  <Select value={formData.condition} onValueChange={(value) => setFormData({...formData, condition: value as Database['public']['Enums']['item_condition']})}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select condition" />
+                      <SelectValue placeholder={t('listItem.selectCondition')} />
                     </SelectTrigger>
                     <SelectContent>
                       {conditions.map((condition) => (
                         <SelectItem key={condition} value={condition}>
-                          {condition.replace('_', ' ').charAt(0).toUpperCase() + condition.slice(1)}
+                          {t(`condition.${condition}`)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -192,7 +309,7 @@ const ListItem = () => {
 
               <div className="space-y-2">
                 <Label>Listing Type</Label>
-                <Select onValueChange={(value) => setFormData({ ...formData, listing_type: value as Database['public']['Enums']['listing_type'] })}>
+                <Select value={formData.listing_type} onValueChange={(value) => setFormData({...formData, listing_type: value as Database['public']['Enums']['listing_type']})}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select listing type" />
                   </SelectTrigger>
@@ -208,7 +325,7 @@ const ListItem = () => {
 
               {formData.listing_type !== 'rent' && (
                 <div className="space-y-2">
-                  <Label htmlFor="sale_price">Sale Price ($)</Label>
+                  <Label htmlFor="sale_price">Sale Price (€)</Label>
                   <Input
                     id="sale_price"
                     type="number"
@@ -223,7 +340,7 @@ const ListItem = () => {
               {formData.listing_type !== 'sell' && (
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="rental_price">Rental Price ($)</Label>
+                    <Label htmlFor="rental_price">Rental Price (€)</Label>
                     <Input
                       id="rental_price"
                       type="number"
@@ -235,7 +352,7 @@ const ListItem = () => {
                   </div>
                   <div className="space-y-2">
                     <Label>Rental Period</Label>
-                    <Select onValueChange={(value) => setFormData({ ...formData, rental_period: value as Database['public']['Enums']['rental_period'] })}>
+                    <Select value={formData.rental_period} onValueChange={(value) => setFormData({...formData, rental_period: value as Database['public']['Enums']['rental_period']})}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select period" />
                       </SelectTrigger>
@@ -251,15 +368,18 @@ const ListItem = () => {
                 </div>
               )}
 
-              <ImageUpload onImagesChange={setImages} />
+              <div className="space-y-2">
+                <Label>{t('listItem.uploadImages')}</Label>
+                <ImageUpload onImagesChange={setImages} />
+              </div>
 
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Listing...' : 'List Item'}
+                {loading ? t('common.loading') : (editItemId ? t('common.save') : t('listItem.shareItem'))}
               </Button>
             </form>
           </CardContent>
         </Card>
-      </main>
+      </div>
     </div>
   );
 };

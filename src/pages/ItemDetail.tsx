@@ -99,13 +99,13 @@ const ItemDetail = () => {
     good: "bg-warning text-warning-foreground",
     fair: "bg-warning/70 text-warning-foreground",
     poor: "bg-destructive text-destructive-foreground",
-  };
+  } as const;
 
   const typeColors = {
     sell: "bg-primary text-primary-foreground",
     rent: "bg-accent text-accent-foreground",
     both: "bg-gradient-warm text-white",
-  };
+  } as const;
 
   return (
     <div className="min-h-screen bg-background">
@@ -172,10 +172,10 @@ const ItemDetail = () => {
             {/* Title and Badges */}
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <Badge className={cn(conditionColors[item.condition as keyof typeof conditionColors])}>
+                <Badge className={cn(conditionColors[item.condition as keyof typeof conditionColors] || "bg-muted text-muted-foreground")}>
                   {t(`condition.${item.condition}`)}
                 </Badge>
-                <Badge className={cn(typeColors[item.listing_type as keyof typeof typeColors])}>
+                <Badge className={cn(typeColors[item.listing_type as keyof typeof typeColors] || "bg-muted text-muted-foreground")}>
                   {item.listing_type === "both" ? "Sell/Rent" : item.listing_type}
                 </Badge>
                 <Badge variant="outline">
