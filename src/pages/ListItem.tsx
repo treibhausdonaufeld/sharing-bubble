@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { ImageUpload } from '@/components/items/ImageUpload';
+import { ImageManager } from '@/components/items/ImageManager';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ArrowLeft } from 'lucide-react';
 
@@ -25,6 +25,7 @@ const ListItem = () => {
   const [loading, setLoading] = useState(false);
   const [loadingItem, setLoadingItem] = useState(!!editItemId);
   const [images, setImages] = useState<{ url: string; file: File }[]>([]);
+  const [existingImages, setExistingImages] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -91,10 +92,10 @@ const ListItem = () => {
           rental_period: item.rental_period || ''
         });
 
-        // Load existing images (for display only - editing images not implemented yet)
+        // Load existing images
         if (item.item_images && item.item_images.length > 0) {
-          // Note: These are existing images, not new uploads
-          // For simplicity, we'll show them but not allow editing them yet
+          const sortedImages = item.item_images.sort((a: any, b: any) => a.display_order - b.display_order);
+          setExistingImages(sortedImages);
         }
       } catch (error) {
         console.error('Error loading item:', error);
@@ -127,13 +128,17 @@ const ListItem = () => {
         .from('item-images')
         .getPublicUrl(fileName);
 
+      // Calculate correct display order considering existing images
+      const displayOrder = existingImages.length + index;
+      const isPrimary = existingImages.length === 0 && index === 0;
+
       return supabase
         .from('item_images')
         .insert({
           item_id: itemId,
           image_url: publicUrl,
-          is_primary: index === 0,
-          display_order: index
+          is_primary: isPrimary,
+          display_order: displayOrder
         });
     });
 
@@ -370,8 +375,12 @@ const ListItem = () => {
               )}
 
               <div className="space-y-2">
-                <Label>{t('listItem.uploadImages')}</Label>
-                <ImageUpload onImagesChange={setImages} />
+                <ImageManager 
+                  onImagesChange={setImages}
+                  onExistingImagesChange={setExistingImages}
+                  existingImages={existingImages}
+                  isEditing={!!editItemId}
+                />
               </div>
 
               <Button type="submit" className="w-full" disabled={loading}>
