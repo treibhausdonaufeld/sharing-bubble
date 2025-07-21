@@ -125,6 +125,7 @@ const Index = () => {
                     ownerRating={item.profiles?.rating || 0}
                     createdAt={item.created_at}
                     isFavorited={false}
+                    ownerId={item.user_id}
                   />
                 ))
               )}

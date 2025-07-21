@@ -219,6 +219,13 @@ export type Database = {
             referencedRelation: "user_locations"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "items_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       messages: {

@@ -13,6 +13,8 @@ import {
   Euro
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
 interface ItemCardProps {
   id: string;
@@ -31,6 +33,7 @@ interface ItemCardProps {
   ownerRating: number;
   createdAt: string;
   isFavorited?: boolean;
+  ownerId?: string;
 }
 
 export const ItemCard = ({
@@ -50,7 +53,20 @@ export const ItemCard = ({
   ownerRating,
   createdAt,
   isFavorited = false,
+  ownerId,
 }: ItemCardProps) => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const handleMessageOwner = () => {
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
+    if (!ownerId) return;
+    
+    navigate(`/messages/${ownerId}`);
+  };
   const conditionColors = {
     new: "bg-success text-success-foreground",
     used: "bg-warning text-warning-foreground",
@@ -173,7 +189,13 @@ export const ItemCard = ({
 
       {/* Actions */}
       <CardFooter className="p-4 pt-0 flex gap-2">
-        <Button variant="outline" size="sm" className="flex-1 gap-2">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="flex-1 gap-2"
+          onClick={handleMessageOwner}
+          disabled={!ownerId || ownerId === user?.id}
+        >
           <MessageCircle className="h-4 w-4" />
           Message
         </Button>

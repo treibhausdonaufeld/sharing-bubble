@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useUnreadCount } from "@/hooks/useUnreadCount";
 import { cn } from "@/lib/utils";
 
 export const Header = () => {
@@ -14,6 +15,7 @@ export const Header = () => {
   const { theme, setTheme } = useTheme();
   const { user, signOut, loading } = useAuth();
   const navigate = useNavigate();
+  const { data: unreadCount = 0 } = useUnreadCount();
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
@@ -78,11 +80,14 @@ export const Header = () => {
                   variant="ghost" 
                   size="icon"
                   className="relative hover:scale-110 transition-transform"
+                  onClick={() => navigate("/messages")}
                 >
                   <MessageCircle className="h-5 w-5" />
-                  <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-xs text-accent-foreground">
-                    3
-                  </span>
+                  {unreadCount > 0 && (
+                    <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-xs text-accent-foreground">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
                 </Button>
 
                 {/* Add Item */}
