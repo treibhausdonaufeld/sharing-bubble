@@ -31,12 +31,16 @@ export const Header = () => {
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between gap-4">
           {/* Logo */}
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-primary shadow-soft">
-              <MapPin className="h-6 w-6 text-white" />
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate("/")}>
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg overflow-hidden">
+              <img 
+                src="/lovable-uploads/692d6398-bc20-4174-b99c-00a1707dfb06.png" 
+                alt="bubble logo" 
+                className="h-10 w-10 object-cover"
+              />
             </div>
             <div className="hidden sm:block">
-              <h1 className="text-xl font-bold text-foreground">LocalGoods</h1>
+              <h1 className="text-xl font-bold text-foreground">bubble</h1>
               <p className="text-xs text-muted-foreground">Community Network</p>
             </div>
           </div>
