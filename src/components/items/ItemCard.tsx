@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -16,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { RequestDialog } from "./RequestDialog";
 
 interface ItemCardProps {
   id: string;
@@ -59,6 +61,8 @@ export const ItemCard = ({
   const navigate = useNavigate();
   const { user } = useAuth();
   const { t } = useLanguage();
+  const [requestDialogOpen, setRequestDialogOpen] = useState(false);
+  const [requestType, setRequestType] = useState<"buy" | "rent">("buy");
 
   const handleMessageOwner = () => {
     if (!user) {
@@ -68,6 +72,15 @@ export const ItemCard = ({
     if (!ownerId) return;
     
     navigate(`/messages/${ownerId}`);
+  };
+
+  const handleRequestClick = (type: "buy" | "rent") => {
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
+    setRequestType(type);
+    setRequestDialogOpen(true);
   };
   const conditionColors = {
     new: "bg-success text-success-foreground",
@@ -212,7 +225,11 @@ export const ItemCard = ({
             variant="community" 
             size="sm" 
             className="flex-1 gap-2"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleRequestClick("buy");
+            }}
+            disabled={!ownerId || ownerId === user?.id}
           >
             <ShoppingCart className="h-4 w-4" />
             Buy
@@ -222,13 +239,33 @@ export const ItemCard = ({
             variant="warm" 
             size="sm" 
             className="flex-1 gap-2"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleRequestClick("rent");
+            }}
+            disabled={!ownerId || ownerId === user?.id}
           >
             <Calendar className="h-4 w-4" />
             Rent
           </Button>
         )}
       </CardFooter>
+
+      {/* Request Dialog */}
+      <RequestDialog
+        isOpen={requestDialogOpen}
+        onClose={() => setRequestDialogOpen(false)}
+        item={{
+          id,
+          title,
+          user_id: ownerId || "",
+          listing_type: listingType,
+          sale_price: salePrice,
+          rental_price: rentalPrice,
+          rental_period: rentalPeriod,
+        }}
+        requestType={requestType}
+      />
     </Card>
   );
 };

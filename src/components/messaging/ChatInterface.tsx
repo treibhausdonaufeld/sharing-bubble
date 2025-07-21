@@ -3,10 +3,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Send, ArrowLeft } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Send, ArrowLeft, ShoppingBag } from "lucide-react";
 import { useMessages } from "@/hooks/useMessages";
 import { useAuth } from "@/hooks/useAuth";
 import { MessageBubble } from "./MessageBubble";
+import { RequestCard } from "./RequestCard";
+import { useItemRequests } from "@/hooks/useItemRequests";
 import { cn } from "@/lib/utils";
 
 interface ChatInterfaceProps {
@@ -26,8 +29,15 @@ export const ChatInterface = ({
 }: ChatInterfaceProps) => {
   const { user } = useAuth();
   const { messages, sendMessage, markAsRead, isSending } = useMessages(conversationUserId);
+  const { requests } = useItemRequests(itemId);
   const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Filter requests for this conversation
+  const conversationRequests = requests.filter(request => 
+    (request.requester_id === user?.id && request.owner_id === conversationUserId) ||
+    (request.owner_id === user?.id && request.requester_id === conversationUserId)
+  );
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -81,14 +91,37 @@ export const ChatInterface = ({
             {conversationUserName.charAt(0).toUpperCase()}
           </AvatarFallback>
         </Avatar>
-        <div>
+        <div className="flex-1">
           <h3 className="font-medium text-foreground">{conversationUserName}</h3>
+          {conversationRequests.length > 0 && (
+            <div className="flex items-center gap-2 mt-1">
+              <ShoppingBag className="h-3 w-3 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">
+                {conversationRequests.filter(r => r.status === "pending").length} pending requests
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Messages */}
+      {/* Messages and Requests */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.length === 0 ? (
+        {/* Show requests at the top */}
+        {conversationRequests.length > 0 && (
+          <div className="space-y-3 pb-4 border-b border-border">
+            <h4 className="text-sm font-medium text-muted-foreground">Requests</h4>
+            {conversationRequests.map((request) => (
+              <RequestCard
+                key={request.id}
+                request={request}
+                currentUserId={user?.id || ""}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Messages */}
+        {messages.length === 0 && conversationRequests.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-muted-foreground">No messages yet</p>
             <p className="text-sm text-muted-foreground">Start the conversation!</p>

@@ -76,11 +76,16 @@ export const MessageList = ({ selectedConversationId, onConversationSelect }: Me
                   {conversation.other_user_name}
                 </h4>
                 <div className="flex items-center gap-2">
-                  {conversation.unread_count > 0 && (
-                    <Badge variant="destructive" className="h-5 w-5 p-0 text-xs">
-                      {conversation.unread_count}
-                    </Badge>
-                  )}
+              {conversation.unread_count > 0 && (
+                <Badge variant="destructive" className="h-5 w-5 p-0 text-xs">
+                  {conversation.unread_count}
+                </Badge>
+              )}
+              {(conversation as any).has_pending_requests && (
+                <Badge variant="warning" className="h-5 w-5 p-0 text-xs">
+                  {(conversation as any).pending_request_count}
+                </Badge>
+              )}
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Clock className="h-3 w-3" />
                     <span>
