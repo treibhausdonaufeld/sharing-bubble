@@ -15,6 +15,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ItemCardProps {
   id: string;
@@ -57,6 +58,7 @@ export const ItemCard = ({
 }: ItemCardProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useLanguage();
 
   const handleMessageOwner = () => {
     if (!user) {
@@ -197,7 +199,7 @@ export const ItemCard = ({
           disabled={!ownerId || ownerId === user?.id}
         >
           <MessageCircle className="h-4 w-4" />
-          Message
+          {t('item.messageOwner')}
         </Button>
         {listingType === "sell" || listingType === "both" ? (
           <Button variant="community" size="sm" className="flex-1 gap-2">

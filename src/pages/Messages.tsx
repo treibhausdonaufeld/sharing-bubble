@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, MessageCircle } from "lucide-react";
 import { useConversations } from "@/hooks/useConversations";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Messages = () => {
   const { user, loading } = useAuth();
@@ -14,13 +15,14 @@ const Messages = () => {
   const { conversationId } = useParams();
   const [selectedConversationId, setSelectedConversationId] = useState(conversationId);
   const { data: conversations = [] } = useConversations();
+  const { t } = useLanguage();
 
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
         <div className="container mx-auto px-4 py-8">
-          <div className="text-center">Loading...</div>
+          <div className="text-center">{t('common.loading')}</div>
         </div>
       </div>
     );
@@ -57,7 +59,7 @@ const Messages = () => {
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div>
-              <h1 className="text-2xl font-bold text-foreground">Messages</h1>
+              <h1 className="text-2xl font-bold text-foreground">{t('messages.title')}</h1>
               <p className="text-muted-foreground">Communicate with other community members</p>
             </div>
           </div>
@@ -98,7 +100,7 @@ const Messages = () => {
                   <div>
                     <MessageCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                     <h3 className="text-lg font-medium text-foreground mb-2">
-                      Select a conversation
+                      {t('messages.selectConversation')}
                     </h3>
                     <p className="text-muted-foreground">
                       Choose a conversation from the left to start messaging

@@ -2,9 +2,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Users, Recycle, Heart, TrendingUp } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export const HeroSection = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   return (
     <section className="relative overflow-hidden bg-gradient-subtle py-16 md:py-24">
       {/* Background Pattern */}
@@ -20,7 +22,7 @@ export const HeroSection = () => {
 
           {/* Main Heading */}
           <h1 className="mb-6 text-4xl font-bold tracking-tight text-foreground md:text-6xl lg:text-7xl">
-            Share, Rent & Buy
+            {t('hero.title')}
             <span className="block bg-gradient-primary bg-clip-text text-transparent">
               Locally
             </span>
@@ -28,18 +30,17 @@ export const HeroSection = () => {
 
           {/* Subtitle */}
           <p className="mb-8 text-lg text-muted-foreground md:text-xl lg:text-2xl">
-            Connect with your neighbors to share items, reduce waste, and build a 
-            more sustainable community. From tools to toys, find what you need nearby.
+            {t('hero.subtitle')}
           </p>
 
           {/* Action Buttons */}
           <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:justify-center">
             <Button variant="community" size="xl" className="gap-2 group">
-              Explore Items
+              {t('hero.getStarted')}
               <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
             </Button>
             <Button variant="outline" size="xl" className="gap-2">
-              Share Your Items
+              {t('hero.learnMore')}
             </Button>
           </div>
 

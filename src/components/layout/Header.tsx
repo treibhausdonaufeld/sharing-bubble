@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Plus, MessageCircle, User, Moon, Sun, MapPin, LogOut } from "lucide-react";
+import { Search, Plus, MessageCircle, User, Moon, Sun, MapPin, LogOut, Languages } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTheme } from "@/providers/theme-provider";
@@ -9,6 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useUnreadCount } from "@/hooks/useUnreadCount";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export const Header = () => {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -16,6 +17,7 @@ export const Header = () => {
   const { user, signOut, loading } = useAuth();
   const navigate = useNavigate();
   const { data: unreadCount = 0 } = useUnreadCount();
+  const { language, setLanguage, t } = useLanguage();
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
@@ -53,7 +55,7 @@ export const Header = () => {
             )}>
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Search items in your community..."
+                placeholder={t('header.search')}
                 className="pl-10 shadow-soft focus:shadow-medium transition-shadow"
                 onFocus={() => setIsSearchFocused(true)}
                 onBlur={() => setIsSearchFocused(false)}
@@ -63,6 +65,33 @@ export const Header = () => {
 
           {/* Actions */}
           <div className="flex items-center gap-2">
+            {/* Language Toggle */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="hover:scale-110 transition-transform"
+                >
+                  <Languages className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-32 bg-background border border-border z-50">
+                <DropdownMenuItem 
+                  onClick={() => setLanguage('en')}
+                  className={cn("cursor-pointer", language === 'en' && "bg-accent")}
+                >
+                  🇺🇸 English
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setLanguage('de')}
+                  className={cn("cursor-pointer", language === 'de' && "bg-accent")}
+                >
+                  🇩🇪 Deutsch
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             {/* Theme Toggle */}
             <Button
               variant="ghost"
@@ -102,7 +131,7 @@ export const Header = () => {
                   onClick={() => navigate("/list-item")}
                 >
                   <Plus className="h-4 w-4" />
-                  <span className="hidden sm:inline">Share Item</span>
+                  <span className="hidden sm:inline">{t('header.shareItem')}</span>
                 </Button>
 
                 {/* Profile Dropdown */}
@@ -116,14 +145,14 @@ export const Header = () => {
                       </Avatar>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuContent align="end" className="w-56 bg-background border border-border z-50">
                     <DropdownMenuItem className="flex items-center">
                       <User className="w-4 h-4 mr-2" />
-                      My Profile
+                      {t('header.myProfile')}
                     </DropdownMenuItem>
                     <DropdownMenuItem className="flex items-center">
                       <Plus className="w-4 h-4 mr-2" />
-                      My Items
+                      {t('header.myItems')}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem 
@@ -131,7 +160,7 @@ export const Header = () => {
                       onClick={handleSignOut}
                     >
                       <LogOut className="w-4 h-4 mr-2" />
-                      Sign Out
+                      {t('header.signOut')}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -145,7 +174,7 @@ export const Header = () => {
                 className="gap-2"
               >
                 <User className="h-4 w-4" />
-                <span className="hidden sm:inline">Sign In</span>
+                <span className="hidden sm:inline">{t('header.signIn')}</span>
               </Button>
             )}
           </div>

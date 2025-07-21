@@ -16,6 +16,7 @@ import {
   Grid3x3
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const categories = [
   { id: "all", name: "All Items", icon: Grid3x3 },
@@ -39,6 +40,26 @@ interface CategoryFilterProps {
 
 export const CategoryFilter = ({ selectedCategory, onCategoryChange }: CategoryFilterProps) => {
   const [showAll, setShowAll] = useState(false);
+  const { t } = useLanguage();
+  
+  const getCategoryName = (id: string) => {
+    switch (id) {
+      case "all": return t('category.all');
+      case "electronics": return t('category.electronics');
+      case "tools": return t('category.tools');
+      case "furniture": return t('category.furniture');
+      case "books": return t('category.books');
+      case "sports": return t('category.sports');
+      case "clothing": return t('category.clothing');
+      case "kitchen": return "Kitchen"; // Not in translations yet
+      case "garden": return t('category.garden');
+      case "toys": return t('category.toys');
+      case "vehicles": return "Vehicles"; // Not in translations yet
+      case "other": return t('category.other');
+      default: return id;
+    }
+  };
+  
   const visibleCategories = showAll ? categories : categories.slice(0, 8);
 
   return (
@@ -69,7 +90,7 @@ export const CategoryFilter = ({ selectedCategory, onCategoryChange }: CategoryF
               )}
             >
               <Icon className="h-4 w-4" />
-              <span className="hidden sm:inline">{category.name}</span>
+              <span className="hidden sm:inline">{getCategoryName(category.id)}</span>
             </Button>
           );
         })}
