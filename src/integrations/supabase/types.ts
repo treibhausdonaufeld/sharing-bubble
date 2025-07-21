@@ -14,7 +14,408 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      credit_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          id: string
+          item_id: string | null
+          request_id: string | null
+          transaction_type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          item_id?: string | null
+          request_id?: string | null
+          transaction_type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          item_id?: string | null
+          request_id?: string | null
+          transaction_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_transactions_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credit_transactions_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "item_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      item_images: {
+        Row: {
+          created_at: string
+          display_order: number | null
+          id: string
+          image_url: string
+          is_primary: boolean | null
+          item_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          image_url: string
+          is_primary?: boolean | null
+          item_id: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          image_url?: string
+          is_primary?: boolean | null
+          item_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "item_images_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      item_requests: {
+        Row: {
+          counter_end_date: string | null
+          counter_message: string | null
+          counter_offer_price: number | null
+          counter_start_date: string | null
+          created_at: string
+          id: string
+          item_id: string
+          message: string | null
+          offered_price: number | null
+          owner_id: string
+          rental_end_date: string | null
+          rental_start_date: string | null
+          request_type: Database["public"]["Enums"]["listing_type"]
+          requester_id: string
+          status: Database["public"]["Enums"]["request_status"] | null
+          updated_at: string
+        }
+        Insert: {
+          counter_end_date?: string | null
+          counter_message?: string | null
+          counter_offer_price?: number | null
+          counter_start_date?: string | null
+          created_at?: string
+          id?: string
+          item_id: string
+          message?: string | null
+          offered_price?: number | null
+          owner_id: string
+          rental_end_date?: string | null
+          rental_start_date?: string | null
+          request_type: Database["public"]["Enums"]["listing_type"]
+          requester_id: string
+          status?: Database["public"]["Enums"]["request_status"] | null
+          updated_at?: string
+        }
+        Update: {
+          counter_end_date?: string | null
+          counter_message?: string | null
+          counter_offer_price?: number | null
+          counter_start_date?: string | null
+          created_at?: string
+          id?: string
+          item_id?: string
+          message?: string | null
+          offered_price?: number | null
+          owner_id?: string
+          rental_end_date?: string | null
+          rental_start_date?: string | null
+          request_type?: Database["public"]["Enums"]["listing_type"]
+          requester_id?: string
+          status?: Database["public"]["Enums"]["request_status"] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "item_requests_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      items: {
+        Row: {
+          category: Database["public"]["Enums"]["item_category"]
+          condition: Database["public"]["Enums"]["item_condition"]
+          created_at: string
+          description: string | null
+          id: string
+          listing_type: Database["public"]["Enums"]["listing_type"]
+          location_id: string | null
+          rental_period: Database["public"]["Enums"]["rental_period"] | null
+          rental_price: number | null
+          sale_price: number | null
+          status: Database["public"]["Enums"]["item_status"] | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["item_category"]
+          condition: Database["public"]["Enums"]["item_condition"]
+          created_at?: string
+          description?: string | null
+          id?: string
+          listing_type: Database["public"]["Enums"]["listing_type"]
+          location_id?: string | null
+          rental_period?: Database["public"]["Enums"]["rental_period"] | null
+          rental_price?: number | null
+          sale_price?: number | null
+          status?: Database["public"]["Enums"]["item_status"] | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["item_category"]
+          condition?: Database["public"]["Enums"]["item_condition"]
+          created_at?: string
+          description?: string | null
+          id?: string
+          listing_type?: Database["public"]["Enums"]["listing_type"]
+          location_id?: string | null
+          rental_period?: Database["public"]["Enums"]["rental_period"] | null
+          rental_price?: number | null
+          sale_price?: number | null
+          status?: Database["public"]["Enums"]["item_status"] | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "items_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "user_locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_read: boolean | null
+          item_id: string | null
+          recipient_id: string
+          request_id: string | null
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          item_id?: string | null
+          recipient_id: string
+          request_id?: string | null
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          item_id?: string | null
+          recipient_id?: string
+          request_id?: string | null
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "item_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          default_location: string | null
+          display_name: string
+          id: string
+          phone: string | null
+          rating: number | null
+          total_ratings: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          default_location?: string | null
+          display_name: string
+          id?: string
+          phone?: string | null
+          rating?: number | null
+          total_ratings?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          default_location?: string | null
+          display_name?: string
+          id?: string
+          phone?: string | null
+          rating?: number | null
+          total_ratings?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_credits: {
+        Row: {
+          balance: number | null
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number | null
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number | null
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_locations: {
+        Row: {
+          address: string
+          created_at: string
+          id: string
+          is_default: boolean | null
+          latitude: number | null
+          longitude: number | null
+          name: string
+          user_id: string
+        }
+        Insert: {
+          address: string
+          created_at?: string
+          id?: string
+          is_default?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
+          name: string
+          user_id: string
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          id?: string
+          is_default?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_ratings: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          item_id: string | null
+          rated_user_id: string
+          rater_id: string
+          rating: number
+          request_id: string | null
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          item_id?: string | null
+          rated_user_id: string
+          rater_id: string
+          rating: number
+          request_id?: string | null
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          item_id?: string | null
+          rated_user_id?: string
+          rater_id?: string
+          rating?: number
+          request_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_ratings_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_ratings_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "item_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +424,29 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      item_category:
+        | "electronics"
+        | "tools"
+        | "furniture"
+        | "books"
+        | "sports"
+        | "clothing"
+        | "kitchen"
+        | "garden"
+        | "toys"
+        | "vehicles"
+        | "other"
+      item_condition: "new" | "used" | "broken"
+      item_status: "draft" | "available" | "reserved" | "rented" | "sold"
+      listing_type: "sell" | "rent" | "both"
+      rental_period: "hourly" | "daily" | "weekly"
+      request_status:
+        | "pending"
+        | "accepted"
+        | "declined"
+        | "counter_offer"
+        | "completed"
+        | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +573,32 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      item_category: [
+        "electronics",
+        "tools",
+        "furniture",
+        "books",
+        "sports",
+        "clothing",
+        "kitchen",
+        "garden",
+        "toys",
+        "vehicles",
+        "other",
+      ],
+      item_condition: ["new", "used", "broken"],
+      item_status: ["draft", "available", "reserved", "rented", "sold"],
+      listing_type: ["sell", "rent", "both"],
+      rental_period: ["hourly", "daily", "weekly"],
+      request_status: [
+        "pending",
+        "accepted",
+        "declined",
+        "counter_offer",
+        "completed",
+        "cancelled",
+      ],
+    },
   },
 } as const
