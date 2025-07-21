@@ -1,16 +1,27 @@
 import { useState } from "react";
-import { Search, Plus, MessageCircle, User, Moon, Sun, MapPin } from "lucide-react";
+import { Search, Plus, MessageCircle, User, Moon, Sun, MapPin, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTheme } from "@/providers/theme-provider";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
 export const Header = () => {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const { theme, setTheme } = useTheme();
+  const { user, signOut, loading } = useAuth();
+  const navigate = useNavigate();
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
   };
 
   return (
@@ -60,32 +71,73 @@ export const Header = () => {
               )}
             </Button>
 
-            {/* Messages */}
-            <Button
-              variant="ghost" 
-              size="icon"
-              className="relative hover:scale-110 transition-transform"
-            >
-              <MessageCircle className="h-5 w-5" />
-              <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-xs text-accent-foreground">
-                3
-              </span>
-            </Button>
+            {user ? (
+              <>
+                {/* Messages */}
+                <Button
+                  variant="ghost" 
+                  size="icon"
+                  className="relative hover:scale-110 transition-transform"
+                >
+                  <MessageCircle className="h-5 w-5" />
+                  <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-xs text-accent-foreground">
+                    3
+                  </span>
+                </Button>
 
-            {/* Add Item */}
-            <Button 
-              variant="community" 
-              size="sm"
-              className="gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              <span className="hidden sm:inline">Share Item</span>
-            </Button>
+                {/* Add Item */}
+                <Button 
+                  variant="community" 
+                  size="sm"
+                  className="gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span className="hidden sm:inline">Share Item</span>
+                </Button>
 
-            {/* Profile */}
-            <Button variant="outline" size="icon">
-              <User className="h-5 w-5" />
-            </Button>
+                {/* Profile Dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="icon" className="relative">
+                      <Avatar className="w-5 h-5">
+                        <AvatarFallback className="text-xs">
+                          {user.email?.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuItem className="flex items-center">
+                      <User className="w-4 h-4 mr-2" />
+                      My Profile
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="flex items-center">
+                      <Plus className="w-4 h-4 mr-2" />
+                      My Items
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      className="flex items-center text-destructive focus:text-destructive"
+                      onClick={handleSignOut}
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Sign Out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            ) : (
+              /* Sign In Button */
+              <Button 
+                variant="community" 
+                size="sm"
+                onClick={() => navigate("/auth")}
+                className="gap-2"
+              >
+                <User className="h-4 w-4" />
+                <span className="hidden sm:inline">Sign In</span>
+              </Button>
+            )}
           </div>
         </div>
       </div>

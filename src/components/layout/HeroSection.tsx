@@ -1,8 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Users, Recycle, Heart, TrendingUp } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 export const HeroSection = () => {
+  const { user } = useAuth();
   return (
     <section className="relative overflow-hidden bg-gradient-subtle py-16 md:py-24">
       {/* Background Pattern */}
