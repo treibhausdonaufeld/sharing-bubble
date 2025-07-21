@@ -104,6 +104,22 @@ const translations = {
     'itemDetail.ownerInfo': 'Owner Information',
     'itemDetail.notFound': 'Item not found',
     'itemDetail.availability': 'Availability',
+    
+    // My Items
+    'myItems.title': 'My Items',
+    'myItems.noItems': 'No items yet',
+    'myItems.createFirst': 'Create your first item to get started!',
+    'myItems.createItem': 'Create Item',
+    'myItems.status': 'Status',
+    'myItems.changeStatus': 'Change Status',
+    'myItems.statusUpdated': 'Item status updated successfully',
+    
+    // Item Status
+    'status.draft': 'Draft',
+    'status.available': 'Available', 
+    'status.reserved': 'Reserved',
+    'status.rented': 'Rented',
+    'status.sold': 'Sold',
   },
   de: {
     // Header
@@ -198,6 +214,22 @@ const translations = {
     'itemDetail.ownerInfo': 'Besitzer Informationen',
     'itemDetail.notFound': 'Artikel nicht gefunden',
     'itemDetail.availability': 'Verfügbarkeit',
+    
+    // My Items
+    'myItems.title': 'Meine Artikel',
+    'myItems.noItems': 'Noch keine Artikel',
+    'myItems.createFirst': 'Erstelle deinen ersten Artikel um loszulegen!',
+    'myItems.createItem': 'Artikel erstellen',
+    'myItems.status': 'Status',
+    'myItems.changeStatus': 'Status ändern',
+    'myItems.statusUpdated': 'Artikel Status erfolgreich aktualisiert',
+    
+    // Item Status  
+    'status.draft': 'Entwurf',
+    'status.available': 'Verfügbar',
+    'status.reserved': 'Reserviert', 
+    'status.rented': 'Vermietet',
+    'status.sold': 'Verkauft',
   },
 };
 

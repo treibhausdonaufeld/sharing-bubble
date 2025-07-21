@@ -150,7 +150,10 @@ export const Header = () => {
                       <User className="w-4 h-4 mr-2" />
                       {t('header.myProfile')}
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="flex items-center">
+                    <DropdownMenuItem 
+                      className="flex items-center"
+                      onClick={() => navigate("/my-items")}
+                    >
                       <Plus className="w-4 h-4 mr-2" />
                       {t('header.myItems')}
                     </DropdownMenuItem>

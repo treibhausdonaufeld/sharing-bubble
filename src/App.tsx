@@ -11,6 +11,7 @@ import Auth from "./pages/Auth";
 import ListItem from "./pages/ListItem";
 import Messages from "./pages/Messages";
 import ItemDetail from "./pages/ItemDetail";
+import MyItems from "./pages/MyItems";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/list-item" element={<ListItem />} />
               <Route path="/item/:itemId" element={<ItemDetail />} />
+              <Route path="/my-items" element={<MyItems />} />
               <Route path="/messages" element={<Messages />} />
               <Route path="/messages/:conversationId" element={<Messages />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
