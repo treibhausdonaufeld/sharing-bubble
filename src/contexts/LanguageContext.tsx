@@ -91,6 +91,19 @@ const translations = {
     'common.back': 'Back',
     'common.next': 'Next',
     'common.previous': 'Previous',
+    
+    // Item Detail
+    'itemDetail.backToItems': 'Back to Items',
+    'itemDetail.editItem': 'Edit Item',
+    'itemDetail.deleteItem': 'Delete Item',
+    'itemDetail.contactOwner': 'Contact Owner',
+    'itemDetail.buyNow': 'Buy Now',
+    'itemDetail.rentNow': 'Rent Now',
+    'itemDetail.itemDetails': 'Item Details',
+    'itemDetail.description': 'Description',
+    'itemDetail.ownerInfo': 'Owner Information',
+    'itemDetail.notFound': 'Item not found',
+    'itemDetail.availability': 'Availability',
   },
   de: {
     // Header
@@ -172,6 +185,19 @@ const translations = {
     'common.back': 'Zurück',
     'common.next': 'Weiter',
     'common.previous': 'Zurück',
+    
+    // Item Detail
+    'itemDetail.backToItems': 'Zurück zu Artikeln',
+    'itemDetail.editItem': 'Artikel bearbeiten',
+    'itemDetail.deleteItem': 'Artikel löschen',
+    'itemDetail.contactOwner': 'Besitzer kontaktieren',
+    'itemDetail.buyNow': 'Jetzt kaufen',
+    'itemDetail.rentNow': 'Jetzt mieten',
+    'itemDetail.itemDetails': 'Artikel Details',
+    'itemDetail.description': 'Beschreibung',
+    'itemDetail.ownerInfo': 'Besitzer Informationen',
+    'itemDetail.notFound': 'Artikel nicht gefunden',
+    'itemDetail.availability': 'Verfügbarkeit',
   },
 };
 

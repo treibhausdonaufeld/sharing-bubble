@@ -82,7 +82,10 @@ export const ItemCard = ({
   };
 
   return (
-    <Card className="group overflow-hidden transition-all duration-300 hover:shadow-strong hover:scale-105 border-border animate-fade-in">
+    <Card 
+      className="group overflow-hidden transition-all duration-300 hover:shadow-strong hover:scale-105 border-border animate-fade-in cursor-pointer"
+      onClick={() => navigate(`/item/${id}`)}
+    >
       {/* Image Section */}
       <div className="relative aspect-[4/3] overflow-hidden">
         {imageUrl ? (
@@ -195,19 +198,32 @@ export const ItemCard = ({
           variant="outline" 
           size="sm" 
           className="flex-1 gap-2"
-          onClick={handleMessageOwner}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleMessageOwner();
+          }}
           disabled={!ownerId || ownerId === user?.id}
         >
           <MessageCircle className="h-4 w-4" />
           {t('item.messageOwner')}
         </Button>
         {listingType === "sell" || listingType === "both" ? (
-          <Button variant="community" size="sm" className="flex-1 gap-2">
+          <Button 
+            variant="community" 
+            size="sm" 
+            className="flex-1 gap-2"
+            onClick={(e) => e.stopPropagation()}
+          >
             <ShoppingCart className="h-4 w-4" />
             Buy
           </Button>
         ) : (
-          <Button variant="warm" size="sm" className="flex-1 gap-2">
+          <Button 
+            variant="warm" 
+            size="sm" 
+            className="flex-1 gap-2"
+            onClick={(e) => e.stopPropagation()}
+          >
             <Calendar className="h-4 w-4" />
             Rent
           </Button>
