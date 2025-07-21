@@ -11,12 +11,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { ImageUpload } from '@/components/items/ImageUpload';
 
 const ListItem = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [images, setImages] = useState<{ url: string; file: File }[]>([]);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -36,6 +38,34 @@ const ListItem = () => {
   const conditions = ['new', 'used', 'broken'];
   const listingTypes = ['sell', 'rent', 'both'];
   const rentalPeriods = ['hourly', 'daily', 'weekly'];
+
+  const uploadImages = async (itemId: string) => {
+    const uploadPromises = images.map(async (image, index) => {
+      const fileExt = image.file.name.split('.').pop();
+      const fileName = `${itemId}/${Date.now()}-${index}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('item-images')
+        .upload(fileName, image.file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('item-images')
+        .getPublicUrl(fileName);
+
+      return supabase
+        .from('item_images')
+        .insert({
+          item_id: itemId,
+          image_url: publicUrl,
+          is_primary: index === 0,
+          display_order: index
+        });
+    });
+
+    await Promise.all(uploadPromises);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,11 +88,18 @@ const ListItem = () => {
         })
       };
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('items')
-        .insert(itemData);
+        .insert(itemData)
+        .select()
+        .single();
 
       if (error) throw error;
+
+      // Upload images if any
+      if (images.length > 0) {
+        await uploadImages(data.id);
+      }
 
       toast({
         title: "Success",
@@ -213,6 +250,8 @@ const ListItem = () => {
                   </div>
                 </div>
               )}
+
+              <ImageUpload onImagesChange={setImages} />
 
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? 'Listing...' : 'List Item'}
