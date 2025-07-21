@@ -202,7 +202,8 @@ const ListItem = () => {
         description: editItemId ? "Item updated successfully!" : "Item listed successfully!",
       });
 
-      navigate('/');
+      // Navigate to item detail view
+      navigate(`/item/${item.id}`);
     } catch (error) {
       console.error('Error saving item:', error);
       toast({
@@ -238,7 +239,7 @@ const ListItem = () => {
         {/* Back Button */}
         <Button 
           variant="ghost" 
-          onClick={() => navigate("/")}
+          onClick={() => editItemId ? navigate(`/item/${editItemId}`) : navigate("/")}
           className="mb-6 gap-2"
         >
           <ArrowLeft className="h-4 w-4" />
