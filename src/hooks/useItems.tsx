@@ -20,7 +20,7 @@ export const useItems = (category?: string | Database['public']['Enums']['item_c
           .from('items')
           .select(`
             *,
-            profiles(
+            profiles!items_user_id_fkey(
               display_name,
               avatar_url,
               rating,
