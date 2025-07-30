@@ -9,7 +9,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
-import { FaGoogle, FaGithub, FaFacebook, FaTwitter, FaDiscord, FaApple, FaMicrosoft, FaLinkedin } from "react-icons/fa";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const Auth = () => {
@@ -118,39 +117,6 @@ const Auth = () => {
     }
   };
 
-  const handleSocialAuth = async (provider: 'google' | 'github' | 'facebook' | 'twitter' | 'discord' | 'apple' | 'azure' | 'linkedin_oidc') => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo: `${window.location.origin}/`,
-        },
-      });
-
-      if (error) {
-        setError(error.message);
-      }
-    } catch (err) {
-      setError("An unexpected error occurred. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const socialProviders = [
-    { name: 'Google', provider: 'google' as const, icon: FaGoogle, color: 'text-red-500' },
-    { name: 'GitHub', provider: 'github' as const, icon: FaGithub, color: 'text-gray-800 dark:text-gray-200' },
-    { name: 'Facebook', provider: 'facebook' as const, icon: FaFacebook, color: 'text-blue-600' },
-    { name: 'Twitter', provider: 'twitter' as const, icon: FaTwitter, color: 'text-blue-400' },
-    { name: 'Discord', provider: 'discord' as const, icon: FaDiscord, color: 'text-indigo-500' },
-    { name: 'Apple', provider: 'apple' as const, icon: FaApple, color: 'text-gray-800 dark:text-gray-200' },
-    { name: 'Microsoft', provider: 'azure' as const, icon: FaMicrosoft, color: 'text-blue-500' },
-    { name: 'LinkedIn', provider: 'linkedin_oidc' as const, icon: FaLinkedin, color: 'text-blue-700' },
-  ];
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -231,59 +197,9 @@ const Auth = () => {
                     {isLoading ? "Signing in..." : t('auth.signIn')}
                   </Button>
                 </form>
-
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  {socialProviders.map((provider) => (
-                    <Button
-                      key={provider.provider}
-                      variant="outline"
-                      onClick={() => handleSocialAuth(provider.provider)}
-                      disabled={isLoading}
-                      className="h-10"
-                    >
-                      <provider.icon className={`w-4 h-4 mr-2 ${provider.color}`} />
-                      {provider.name}
-                    </Button>
-                  ))}
-                </div>
               </TabsContent>
 
               <TabsContent value="signup" className="space-y-4">
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-2">
-                    {socialProviders.map((provider) => (
-                      <Button
-                        key={provider.provider}
-                        variant="outline"
-                        onClick={() => handleSocialAuth(provider.provider)}
-                        disabled={isLoading}
-                        className="h-10"
-                      >
-                        <provider.icon className={`w-4 h-4 mr-2 ${provider.color}`} />
-                        {provider.name}
-                      </Button>
-                    ))}
-                  </div>
-
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t" />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-card px-2 text-muted-foreground">Or sign up with email</span>
-                    </div>
-                  </div>
-                </div>
-
                 <form onSubmit={handleSignup} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="signup-name">Display Name</Label>
