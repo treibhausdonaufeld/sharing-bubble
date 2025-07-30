@@ -6,17 +6,18 @@ export interface SocialProvider {
   name: string;
   type: string;
   enabled: boolean;
-  keycloakAlias?: string;
+  icon: string;
 }
 
-interface KeycloakProvidersResponse {
+interface SocialProvidersResponse {
   providers: SocialProvider[];
-  realm: string;
+  source: string;
   success: boolean;
   error?: string;
+  message?: string;
 }
 
-export const useKeycloakProviders = () => {
+export const useSocialProviders = () => {
   const [providers, setProviders] = useState<SocialProvider[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +28,7 @@ export const useKeycloakProviders = () => {
         setLoading(true);
         setError(null);
 
-        const { data, error: functionError } = await supabase.functions.invoke('fetch-keycloak-providers');
+        const { data, error: functionError } = await supabase.functions.invoke('fetch-social-providers');
 
         if (functionError) {
           console.error('Function error:', functionError);
@@ -36,7 +37,7 @@ export const useKeycloakProviders = () => {
           return;
         }
 
-        const response: KeycloakProvidersResponse = data;
+        const response: SocialProvidersResponse = data;
 
         if (!response.success) {
           setError(response.error || 'Unknown error occurred');
@@ -46,8 +47,8 @@ export const useKeycloakProviders = () => {
 
         setProviders(response.providers || []);
       } catch (err) {
-        console.error('Error fetching Keycloak providers:', err);
-        setError('Failed to connect to Keycloak');
+      console.error('Error fetching social auth providers:', err);
+      setError('Failed to connect to auth service');
         setProviders([]);
       } finally {
         setLoading(false);
@@ -62,7 +63,7 @@ export const useKeycloakProviders = () => {
       setLoading(true);
       setError(null);
 
-      const { data, error: functionError } = await supabase.functions.invoke('fetch-keycloak-providers');
+      const { data, error: functionError } = await supabase.functions.invoke('fetch-social-providers');
 
       if (functionError) {
         console.error('Function error:', functionError);
@@ -71,7 +72,7 @@ export const useKeycloakProviders = () => {
         return;
       }
 
-      const response: KeycloakProvidersResponse = data;
+      const response: SocialProvidersResponse = data;
 
       if (!response.success) {
         setError(response.error || 'Unknown error occurred');
@@ -81,8 +82,8 @@ export const useKeycloakProviders = () => {
 
       setProviders(response.providers || []);
     } catch (err) {
-      console.error('Error fetching Keycloak providers:', err);
-      setError('Failed to connect to Keycloak');
+      console.error('Error fetching social auth providers:', err);
+      setError('Failed to connect to auth service');
       setProviders([]);
     } finally {
       setLoading(false);

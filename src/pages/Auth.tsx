@@ -9,7 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, ArrowLeft, RefreshCw } from "lucide-react";
-import { useKeycloakProviders } from "@/hooks/useKeycloakProviders";
+import { useSocialProviders } from "@/hooks/useSocialProviders";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const Auth = () => {
@@ -19,7 +19,7 @@ const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useLanguage();
-  const { providers, loading: providersLoading, error: providersError, refetchProviders } = useKeycloakProviders();
+  const { providers, loading: providersLoading, error: providersError, refetchProviders } = useSocialProviders();
 
   const [loginData, setLoginData] = useState({
     email: "",
@@ -119,46 +119,25 @@ const Auth = () => {
     }
   };
 
-  const handleKeycloakAuth = async (providerAlias: string) => {
+  const handleSocialAuth = async (providerId: string) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      // Use Keycloak's direct OAuth flow
-      const keycloakUrl = 'YOUR_KEYCLOAK_URL'; // This should come from environment or config
-      const realm = 'YOUR_REALM'; // This should come from the providers response
-      const clientId = 'YOUR_CLIENT_ID'; // This should come from environment
-      const redirectUri = encodeURIComponent(`${window.location.origin}/auth/callback`);
-      
-      // Redirect to Keycloak OAuth endpoint
-      const authUrl = `${keycloakUrl}/realms/${realm}/protocol/openid-connect/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=openid profile email&kc_idp_hint=${providerAlias}`;
-      
-      window.location.href = authUrl;
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: providerId as any,
+        options: {
+          redirectTo: `${window.location.origin}/`,
+        },
+      });
+
+      if (error) {
+        setError(error.message);
+      }
     } catch (err) {
       setError("Failed to initialize authentication.");
+    } finally {
       setIsLoading(false);
-    }
-  };
-
-  const getProviderIcon = (providerType: string) => {
-    // Map Keycloak provider types to icons or use a generic icon
-    switch (providerType.toLowerCase()) {
-      case 'google':
-        return '🔍';
-      case 'github':
-        return '🐙';
-      case 'facebook':
-        return '📘';
-      case 'twitter':
-        return '🐦';
-      case 'microsoft':
-        return '🪟';
-      case 'apple':
-        return '🍎';
-      case 'linkedin':
-        return '💼';
-      default:
-        return '🔐';
     }
   };
 
@@ -243,7 +222,7 @@ const Auth = () => {
                   </Button>
                 </form>
 
-                {/* Dynamic Keycloak Providers */}
+                {/* Dynamic Social Providers */}
                 {providers.length > 0 && (
                   <>
                     <div className="relative">
@@ -275,11 +254,11 @@ const Auth = () => {
                           <Button
                             key={provider.id}
                             variant="outline"
-                            onClick={() => handleKeycloakAuth(provider.keycloakAlias || provider.id)}
+                            onClick={() => handleSocialAuth(provider.id)}
                             disabled={isLoading || providersLoading}
                             className="h-10 justify-start"
                           >
-                            <span className="mr-2">{getProviderIcon(provider.type)}</span>
+                            <span className="mr-2">{provider.icon}</span>
                             Continue with {provider.name}
                           </Button>
                         ))}
@@ -296,7 +275,7 @@ const Auth = () => {
               </TabsContent>
 
               <TabsContent value="signup" className="space-y-4">
-                {/* Dynamic Keycloak Providers for Signup */}
+                {/* Dynamic Social Providers for Signup */}
                 {providers.length > 0 && (
                   <>
                     <div className="space-y-2">
@@ -305,11 +284,11 @@ const Auth = () => {
                           <Button
                             key={provider.id}
                             variant="outline"
-                            onClick={() => handleKeycloakAuth(provider.keycloakAlias || provider.id)}
+                            onClick={() => handleSocialAuth(provider.id)}
                             disabled={isLoading || providersLoading}
                             className="h-10 justify-start"
                           >
-                            <span className="mr-2">{getProviderIcon(provider.type)}</span>
+                            <span className="mr-2">{provider.icon}</span>
                             Sign up with {provider.name}
                           </Button>
                         ))}
