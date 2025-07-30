@@ -10,19 +10,19 @@ export const SOCIAL_PROVIDERS: SocialProvider[] = [
   {
     id: 'google',
     name: 'Google',
-    enabled: true, // Set to false to disable
+    enabled: false, // Set to false to disable
     icon: '🌟'
   },
   {
     id: 'github',
     name: 'GitHub', 
-    enabled: true, // Set to false to disable
+    enabled: false, // Set to false to disable
     icon: '🐙'
   },
   {
-    id: 'discord',
-    name: 'Discord',
-    enabled: false, // Set to true to enable
+    id: 'keycloak',
+    name: 'Keycloak',
+    enabled: true,
     icon: '🎮'
   }
 ];
