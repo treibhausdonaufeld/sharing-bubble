@@ -9,7 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, ArrowLeft, RefreshCw } from "lucide-react";
-import { useSocialProviders } from "@/hooks/useSocialProviders";
+import { getEnabledSocialProviders, SocialProvider } from "@/config/socialProviders";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const Auth = () => {
@@ -19,7 +19,7 @@ const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useLanguage();
-  const { providers, loading: providersLoading, error: providersError, refetchProviders } = useSocialProviders();
+  const providers = getEnabledSocialProviders();
 
   const [loginData, setLoginData] = useState({
     email: "",
@@ -119,13 +119,13 @@ const Auth = () => {
     }
   };
 
-  const handleSocialAuth = async (providerId: string) => {
+  const handleSocialAuth = async (provider: SocialProvider) => {
     setIsLoading(true);
     setError(null);
 
     try {
       const { error } = await supabase.auth.signInWithOAuth({
-        provider: providerId as any,
+        provider: provider.id as any,
         options: {
           redirectTo: `${window.location.origin}/`,
         },
@@ -222,7 +222,7 @@ const Auth = () => {
                   </Button>
                 </form>
 
-                {/* Dynamic Social Providers */}
+                {/* Social Providers */}
                 {providers.length > 0 && (
                   <>
                     <div className="relative">
@@ -234,71 +234,41 @@ const Auth = () => {
                       </div>
                     </div>
 
-                    <div className="space-y-2">
-                      {providersError && (
-                        <div className="flex items-center justify-between p-2 border border-destructive/20 rounded-md bg-destructive/10">
-                          <span className="text-sm text-destructive">{providersError}</span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={refetchProviders}
-                            disabled={providersLoading}
-                          >
-                            <RefreshCw className={`w-4 h-4 ${providersLoading ? 'animate-spin' : ''}`} />
-                          </Button>
-                        </div>
-                      )}
-                      
-                      <div className="grid grid-cols-1 gap-2">
-                        {providers.map((provider) => (
-                          <Button
-                            key={provider.id}
-                            variant="outline"
-                            onClick={() => handleSocialAuth(provider.id)}
-                            disabled={isLoading || providersLoading}
-                            className="h-10 justify-start"
-                          >
-                            <span className="mr-2">{provider.icon}</span>
-                            Continue with {provider.name}
-                          </Button>
-                        ))}
-                      </div>
-                      
-                      {providersLoading && (
-                        <div className="text-center text-sm text-muted-foreground">
-                          Loading providers...
-                        </div>
-                      )}
+                    <div className="grid grid-cols-1 gap-2">
+                      {providers.map((provider) => (
+                        <Button
+                          key={provider.id}
+                          variant="outline"
+                          onClick={() => handleSocialAuth(provider)}
+                          disabled={isLoading}
+                          className="h-10 justify-start"
+                        >
+                          <span className="mr-2">{provider.icon}</span>
+                          Continue with {provider.name}
+                        </Button>
+                      ))}
                     </div>
                   </>
                 )}
               </TabsContent>
 
               <TabsContent value="signup" className="space-y-4">
-                {/* Dynamic Social Providers for Signup */}
+                {/* Social Providers for Signup */}
                 {providers.length > 0 && (
                   <>
-                    <div className="space-y-2">
-                      <div className="grid grid-cols-1 gap-2">
-                        {providers.map((provider) => (
-                          <Button
-                            key={provider.id}
-                            variant="outline"
-                            onClick={() => handleSocialAuth(provider.id)}
-                            disabled={isLoading || providersLoading}
-                            className="h-10 justify-start"
-                          >
-                            <span className="mr-2">{provider.icon}</span>
-                            Sign up with {provider.name}
-                          </Button>
-                        ))}
-                      </div>
-                      
-                      {providersLoading && (
-                        <div className="text-center text-sm text-muted-foreground">
-                          Loading providers...
-                        </div>
-                      )}
+                    <div className="grid grid-cols-1 gap-2">
+                      {providers.map((provider) => (
+                        <Button
+                          key={provider.id}
+                          variant="outline"
+                          onClick={() => handleSocialAuth(provider)}
+                          disabled={isLoading}
+                          className="h-10 justify-start"
+                        >
+                          <span className="mr-2">{provider.icon}</span>
+                          Sign up with {provider.name}
+                        </Button>
+                      ))}
                     </div>
 
                     <div className="relative">
