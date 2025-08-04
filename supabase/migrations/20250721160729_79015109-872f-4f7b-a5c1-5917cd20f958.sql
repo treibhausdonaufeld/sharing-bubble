@@ -12,8 +12,8 @@ ALTER TABLE public.item_requests REPLICA IDENTITY FULL;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.item_requests;
 
 -- Enable real-time for messages table (if not already enabled)
-ALTER TABLE public.messages REPLICA IDENTITY FULL;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.messages;
+-- ALTER TABLE public.messages REPLICA IDENTITY FULL;
+-- ALTER PUBLICATION supabase_realtime ADD TABLE public.messages;
 
 -- Add indexes for better performance on request queries
 CREATE INDEX IF NOT EXISTS idx_item_requests_item_id ON public.item_requests(item_id);

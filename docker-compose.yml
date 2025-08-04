@@ -8,6 +8,25 @@
 name: supabase
 
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:8080"
+    volumes:
+      - .:/app
+    profiles:
+      - dev
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - kong
+
+  # proxy:
+  #   image: ghcr.io/firlevapz/keycloak-oidc-proxy:latest
+  #   environment:
+  #     - OIDC_CONFIGURATION_URL=https://auth.treibhausdonaufeld.at/application/o/bubble/.well-known/openid-configuration
 
   studio:
     container_name: supabase-studio
@@ -101,6 +120,8 @@ services:
       analytics:
         condition: service_healthy
     environment:
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+
       GOTRUE_API_HOST: 0.0.0.0
       GOTRUE_API_PORT: 9999
       API_EXTERNAL_URL: ${API_EXTERNAL_URL}
@@ -159,6 +180,13 @@ services:
       # GOTRUE_HOOK_SEND_EMAIL_ENABLED: "false"
       # GOTRUE_HOOK_SEND_EMAIL_URI: "http://host.docker.internal:54321/functions/v1/email_sender"
       # GOTRUE_HOOK_SEND_EMAIL_SECRETS: "v1,whsec_VGhpcyBpcyBhbiBleGFtcGxlIG9mIGEgc2hvcnRlciBCYXNlNjQgc3RyaW5n"
+
+      GOTRUE_EXTERNAL_KEYCLOAK_ENABLED: ${EXTERNAL_KEYCLOAK_ENABLED}
+      GOTRUE_EXTERNAL_KEYCLOAK_CLIENT_ID: ${EXTERNAL_KEYCLOAK_CLIENT_ID}
+      GOTRUE_EXTERNAL_KEYCLOAK_SECRET: ${EXTERNAL_KEYCLOAK_SECRET}
+      GOTRUE_EXTERNAL_KEYCLOAK_REDIRECT_URI: ${EXTERNAL_KEYCLOAK_REDIRECT_URI}
+      GOTRUE_EXTERNAL_KEYCLOAK_URL: ${EXTERNAL_KEYCLOAK_URL}
+      GOTRUE_EXTERNAL_KEYCLOAK_SKIP_NONCE_CHECK: ${EXTERNAL_KEYCLOAK_SKIP_NONCE_CHECK:-false}
 
   rest:
     container_name: supabase-rest

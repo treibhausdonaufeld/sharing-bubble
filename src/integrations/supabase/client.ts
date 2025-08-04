@@ -2,8 +2,16 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = "https://ytzettfnwqiaxrmkfogk.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0emV0dGZud3FpYXhybWtmb2drIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMwNzg4NzcsImV4cCI6MjA2ODY1NDg3N30.-CaTtlwhLPhX2BzoCIW0sXJYEL1ub4rS6eCkVBHK_JE";
+var SUPABASE_URL = "https://ytzettfnwqiaxrmkfogk.supabase.co";
+var SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0emV0dGZud3FpYXhybWtmb2drIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMwNzg4NzcsImV4cCI6MjA2ODY1NDg3N30.-CaTtlwhLPhX2BzoCIW0sXJYEL1ub4rS6eCkVBHK_JE";
+
+// Only override defaults if environment variables are set and have values
+if (import.meta.env.VITE_SUPABASE_URL) {
+  SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+}
+if (import.meta.env.VITE_ANON_KEY) {
+  SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_ANON_KEY;
+}
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
