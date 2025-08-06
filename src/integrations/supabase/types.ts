@@ -491,6 +491,10 @@ export type Database = {
         Args: { "": unknown }
         Returns: unknown
       }
+      is_item_owner: {
+        Args: { _item_id: string; _user_id: string }
+        Returns: boolean
+      }
       ivfflat_bit_support: {
         Args: { "": unknown }
         Returns: unknown
