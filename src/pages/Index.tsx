@@ -4,6 +4,7 @@ import { HeroSection } from "@/components/layout/HeroSection";
 import { CategoryFilter } from "@/components/layout/CategoryFilter";
 import { ItemCard } from "@/components/items/ItemCard";
 import { useItems } from "@/hooks/useItems";
+import { useAuth } from "@/hooks/useAuth";
 
 // Mock data for initial demonstration
 const mockItems = [
@@ -60,6 +61,7 @@ const mockItems = [
 const Index = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const { items, loading, error } = useItems(selectedCategory);
+  const { user } = useAuth();
 
   if (error) {
     return (
@@ -77,7 +79,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <HeroSection />
+      {!user && <HeroSection />}
       
       <main className="container mx-auto px-4 py-8">
         <div className="space-y-8">
