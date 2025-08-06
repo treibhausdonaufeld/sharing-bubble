@@ -37,6 +37,18 @@ const Messages = () => {
     (conv) => conv.other_user_id === selectedConversationId
   );
 
+  // If no existing conversation but we have a selected user ID, create a temporary conversation object
+  const effectiveConversation = selectedConversation || (selectedConversationId ? {
+    other_user_id: selectedConversationId,
+    other_user_name: "Loading...", // Will be updated when messages load
+    other_user_avatar: undefined,
+    last_message: "",
+    last_message_time: "",
+    unread_count: 0,
+    item_id: undefined,
+    item_title: undefined,
+  } : null);
+
   const handleConversationSelect = (userId: string) => {
     setSelectedConversationId(userId);
     // Update URL for deep linking
@@ -87,12 +99,12 @@ const Messages = () => {
           {/* Chat Interface */}
           <div className={`lg:col-span-2 ${!selectedConversationId ? 'hidden lg:block' : 'block'}`}>
             <div className="h-full border border-border rounded-lg overflow-hidden">
-              {selectedConversation ? (
+              {effectiveConversation ? (
                 <ChatInterface
-                  conversationUserId={selectedConversation.other_user_id}
-                  conversationUserName={selectedConversation.other_user_name}
-                  conversationUserAvatar={selectedConversation.other_user_avatar}
-                  itemId={selectedConversation.item_id}
+                  conversationUserId={effectiveConversation.other_user_id}
+                  conversationUserName={effectiveConversation.other_user_name}
+                  conversationUserAvatar={effectiveConversation.other_user_avatar}
+                  itemId={effectiveConversation.item_id}
                   onBack={handleBackToList}
                 />
               ) : (

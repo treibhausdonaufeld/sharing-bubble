@@ -24,6 +24,7 @@ import { useItem } from "@/hooks/useItem";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
+import { RequestDialog } from "@/components/items/RequestDialog";
 
 const ItemDetail = () => {
   const { itemId } = useParams<{ itemId: string }>();
@@ -32,6 +33,8 @@ const ItemDetail = () => {
   const { t } = useLanguage();
   const { toast } = useToast();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [requestDialogOpen, setRequestDialogOpen] = useState(false);
+  const [requestType, setRequestType] = useState<"buy" | "rent">("buy");
 
   const { data: item, isLoading, error } = useItem(itemId);
 
@@ -43,6 +46,15 @@ const ItemDetail = () => {
     if (!item?.user_id) return;
     
     navigate(`/messages/${item.user_id}`);
+  };
+
+  const handleRequestClick = (type: "buy" | "rent") => {
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
+    setRequestType(type);
+    setRequestDialogOpen(true);
   };
 
   const handleEditItem = () => {
@@ -318,13 +330,21 @@ const ItemDetail = () => {
                   
                   <div className="flex gap-3">
                     {(item.listing_type === "sell" || item.listing_type === "both") && (
-                      <Button variant="community" className="flex-1 gap-2">
+                      <Button 
+                        variant="community" 
+                        className="flex-1 gap-2"
+                        onClick={() => handleRequestClick("buy")}
+                      >
                         <ShoppingCart className="h-4 w-4" />
                         {t('itemDetail.buyNow')}
                       </Button>
                     )}
                     {(item.listing_type === "rent" || item.listing_type === "both") && (
-                      <Button variant="warm" className="flex-1 gap-2">
+                      <Button 
+                        variant="warm" 
+                        className="flex-1 gap-2"
+                        onClick={() => handleRequestClick("rent")}
+                      >
                         <Calendar className="h-4 w-4" />
                         {t('itemDetail.rentNow')}
                       </Button>
@@ -336,6 +356,22 @@ const ItemDetail = () => {
           </div>
         </div>
       </div>
+
+      {/* Request Dialog */}
+      <RequestDialog
+        isOpen={requestDialogOpen}
+        onClose={() => setRequestDialogOpen(false)}
+        item={{
+          id: item.id,
+          title: item.title,
+          user_id: item.user_id,
+          listing_type: item.listing_type,
+          sale_price: item.sale_price,
+          rental_price: item.rental_price,
+          rental_period: item.rental_period,
+        }}
+        requestType={requestType}
+      />
     </div>
   );
 };
