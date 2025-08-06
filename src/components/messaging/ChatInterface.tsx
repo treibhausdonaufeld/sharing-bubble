@@ -96,9 +96,9 @@ export const ChatInterface = ({
   };
 
   return (
-    <div className="flex flex-col h-full max-h-full">
+    <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center gap-3 p-4 border-b border-border bg-background/50 backdrop-blur-sm">
+      <div className="flex items-center gap-3 p-4 border-b border-border bg-background/50 backdrop-blur-sm shrink-0">
         {onBack && (
           <Button variant="ghost" size="icon" onClick={onBack} className="lg:hidden">
             <ArrowLeft className="h-4 w-4" />
@@ -124,7 +124,8 @@ export const ChatInterface = ({
       </div>
 
       {/* Messages and Requests */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
+      <div className="flex-1 overflow-y-auto min-h-0">
+        <div className="p-4 space-y-4">
         {/* Show requests at the top */}
         {conversationRequests.length > 0 && (
           <div className="space-y-3 pb-4 border-b border-border">
@@ -158,7 +159,8 @@ export const ChatInterface = ({
             />
           ))
         )}
-        <div ref={messagesEndRef} />
+          <div ref={messagesEndRef} />
+        </div>
       </div>
 
       {/* Message Input */}
