@@ -70,6 +70,7 @@ const translations = {
     
     // Conditions
     'condition.new': 'New',
+    'condition.used': 'Used',
     'condition.likeNew': 'Like New',
     'condition.good': 'Good',
     'condition.fair': 'Fair',
@@ -182,6 +183,7 @@ const translations = {
     
     // Conditions
     'condition.new': 'Neu',
+    'condition.used': 'Gebraucht',
     'condition.likeNew': 'Wie neu',
     'condition.good': 'Gut',
     'condition.fair': 'Angemessen',
