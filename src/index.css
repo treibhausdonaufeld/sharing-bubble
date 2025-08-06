@@ -19,21 +19,21 @@
     --popover: 0 0% 100%;
     --popover-foreground: 25 25% 15%;
 
-    /* Primary: Warm forest green - trustworthy, sustainable */
-    --primary: 140 35% 25%;
+    /* Primary: Vibrant lime green from logo - fresh, modern */
+    --primary: 100 55% 45%;
     --primary-foreground: 0 0% 98%;
-    --primary-glow: 140 45% 35%;
+    --primary-glow: 100 65% 55%;
 
-    /* Secondary: Warm terracotta - community, warmth */
-    --secondary: 20 45% 88%;
-    --secondary-foreground: 25 35% 20%;
+    /* Secondary: Soft pink - warm, community */
+    --secondary: 320 25% 90%;
+    --secondary-foreground: 320 35% 20%;
 
     --muted: 45 20% 94%;
     --muted-foreground: 25 15% 45%;
 
-    /* Accent: Soft orange - energy, sharing */
-    --accent: 35 65% 65%;
-    --accent-foreground: 25 35% 15%;
+    /* Accent: Purple-magenta from logo - energy, creativity */
+    --accent: 280 70% 60%;
+    --accent-foreground: 0 0% 98%;
 
     /* Success: Natural green */
     --success: 120 45% 50%;
@@ -52,7 +52,8 @@
 
     /* Enhanced design tokens */
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
-    --gradient-warm: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--warning)));
+    --gradient-warm: linear-gradient(135deg, hsl(var(--accent)), hsl(100 65% 55%));
+    --gradient-logo: linear-gradient(135deg, hsl(100 55% 45%), hsl(280 70% 60%));
     --gradient-subtle: linear-gradient(180deg, hsl(var(--background)), hsl(var(--muted)));
     
     /* Elegant shadows using brand colors */
@@ -95,21 +96,21 @@
     --popover: 25 20% 12%;
     --popover-foreground: 45 25% 92%;
 
-    /* Primary: Brighter forest green for dark mode */
-    --primary: 140 45% 65%;
+    /* Primary: Bright lime green for dark mode */
+    --primary: 100 65% 55%;
     --primary-foreground: 25 15% 8%;
-    --primary-glow: 140 55% 75%;
+    --primary-glow: 100 75% 65%;
 
-    /* Secondary: Warm dark terracotta */
-    --secondary: 20 25% 20%;
-    --secondary-foreground: 45 35% 85%;
+    /* Secondary: Deep pink for dark mode */
+    --secondary: 320 35% 25%;
+    --secondary-foreground: 320 25% 85%;
 
     --muted: 25 20% 16%;
     --muted-foreground: 45 15% 60%;
 
-    /* Accent: Vibrant warm orange for dark mode */
-    --accent: 35 75% 70%;
-    --accent-foreground: 25 25% 15%;
+    /* Accent: Bright purple-magenta for dark mode */
+    --accent: 280 80% 70%;
+    --accent-foreground: 25 15% 8%;
 
     /* Success: Bright natural green */
     --success: 120 55% 60%;
@@ -128,7 +129,8 @@
 
     /* Dark mode gradients and shadows */
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
-    --gradient-warm: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--warning)));
+    --gradient-warm: linear-gradient(135deg, hsl(var(--accent)), hsl(100 75% 65%));
+    --gradient-logo: linear-gradient(135deg, hsl(100 65% 55%), hsl(280 80% 70%));
     --gradient-subtle: linear-gradient(180deg, hsl(var(--background)), hsl(var(--muted)));
     
     --shadow-soft: 0 2px 8px hsl(0 0% 0% / 0.3);

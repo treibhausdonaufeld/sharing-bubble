@@ -75,6 +75,7 @@ export default {
 			backgroundImage: {
 				'gradient-primary': 'var(--gradient-primary)',
 				'gradient-warm': 'var(--gradient-warm)',
+				'gradient-logo': 'var(--gradient-logo)',
 				'gradient-subtle': 'var(--gradient-subtle)'
 			},
 			boxShadow: {
