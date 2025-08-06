@@ -146,7 +146,10 @@ export const Header = () => {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56 bg-background border border-border z-50">
-                    <DropdownMenuItem className="flex items-center">
+                    <DropdownMenuItem 
+                      className="flex items-center"
+                      onClick={() => navigate("/profile")}
+                    >
                       <User className="w-4 h-4 mr-2" />
                       {t('header.myProfile')}
                     </DropdownMenuItem>
