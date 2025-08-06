@@ -96,7 +96,7 @@ export const ChatInterface = ({
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full max-h-full">
       {/* Header */}
       <div className="flex items-center gap-3 p-4 border-b border-border bg-background/50 backdrop-blur-sm">
         {onBack && (
@@ -124,7 +124,7 @@ export const ChatInterface = ({
       </div>
 
       {/* Messages and Requests */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
         {/* Show requests at the top */}
         {conversationRequests.length > 0 && (
           <div className="space-y-3 pb-4 border-b border-border">
@@ -162,7 +162,7 @@ export const ChatInterface = ({
       </div>
 
       {/* Message Input */}
-      <div className="p-4 border-t border-border bg-background/50 backdrop-blur-sm">
+      <div className="p-4 border-t border-border bg-background/50 backdrop-blur-sm shrink-0">
         <div className="flex gap-2">
           <Input
             ref={inputRef}
