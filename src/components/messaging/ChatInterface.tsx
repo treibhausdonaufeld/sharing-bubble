@@ -164,7 +164,7 @@ export const ChatInterface = ({
       </div>
 
       {/* Message Input */}
-      <div className="p-4 border-t border-border bg-background/50 backdrop-blur-sm flex-shrink-0">
+      <div className="p-4 border-t border-border bg-background/50 backdrop-blur-sm flex-shrink-0 sticky bottom-0">
         <div className="flex gap-2">
           <Input
             ref={inputRef}
