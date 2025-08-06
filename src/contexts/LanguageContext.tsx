@@ -62,8 +62,10 @@ const translations = {
     'category.clothing': 'Clothing',
     'category.sports': 'Sports',
     'category.tools': 'Tools',
+    'category.kitchen': 'Kitchen',
     'category.garden': 'Garden',
     'category.toys': 'Toys',
+    'category.vehicles': 'Vehicles',
     'category.other': 'Other',
     
     // Conditions
@@ -172,8 +174,10 @@ const translations = {
     'category.clothing': 'Kleidung',
     'category.sports': 'Sport',
     'category.tools': 'Werkzeuge',
+    'category.kitchen': 'Küche',
     'category.garden': 'Garten',
     'category.toys': 'Spielzeug',
+    'category.vehicles': 'Fahrzeuge',
     'category.other': 'Sonstiges',
     
     // Conditions

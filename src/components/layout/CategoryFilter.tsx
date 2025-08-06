@@ -51,10 +51,10 @@ export const CategoryFilter = ({ selectedCategory, onCategoryChange }: CategoryF
       case "books": return t('category.books');
       case "sports": return t('category.sports');
       case "clothing": return t('category.clothing');
-      case "kitchen": return "Kitchen"; // Not in translations yet
+      case "kitchen": return t('category.kitchen');
       case "garden": return t('category.garden');
       case "toys": return t('category.toys');
-      case "vehicles": return "Vehicles"; // Not in translations yet
+      case "vehicles": return t('category.vehicles');
       case "other": return t('category.other');
       default: return id;
     }
