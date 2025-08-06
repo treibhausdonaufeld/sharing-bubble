@@ -25,6 +25,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
 import { RequestDialog } from "@/components/items/RequestDialog";
+import { ItemOwnersManager } from "@/components/items/ItemOwnersManager";
+import { useItemOwners } from "@/hooks/useItemOwners";
 
 const ItemDetail = () => {
   const { itemId } = useParams<{ itemId: string }>();
@@ -32,6 +34,7 @@ const ItemDetail = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
   const { toast } = useToast();
+  const { data: owners = [] } = useItemOwners(itemId);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [requestDialogOpen, setRequestDialogOpen] = useState(false);
   const [requestType, setRequestType] = useState<"buy" | "rent">("buy");
@@ -100,7 +103,8 @@ const ItemDetail = () => {
     );
   }
 
-  const isOwner = user?.id === item.user_id;
+  // Check if the current user is an owner of the item
+  const isOwner = user && owners.some(owner => owner.user_id === user.id);
   const profile = item.profiles as any;
   const images = item.item_images || [];
   const primaryImage = images.find((img: any) => img.is_primary) || images[0];
@@ -298,58 +302,57 @@ const ItemDetail = () => {
             {/* Action Buttons */}
             <div className="space-y-3">
               {isOwner ? (
-                /* Owner Actions */
-                <div className="flex gap-3">
-                  <Button 
-                    onClick={handleEditItem}
-                    className="flex-1 gap-2"
-                    variant="outline"
-                  >
-                    <Edit3 className="h-4 w-4" />
-                    {t('itemDetail.editItem')}
-                  </Button>
-                  <Button 
-                    onClick={handleDeleteItem}
-                    variant="destructive"
-                    size="icon"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                <div className="space-y-3">
+                  <div className="flex gap-2">
+                    <Button 
+                      onClick={handleEditItem} 
+                      className="flex-1"
+                    >
+                      <Edit3 className="mr-2 h-4 w-4" />
+                      {t('Edit')}
+                    </Button>
+                    <Button 
+                      onClick={handleDeleteItem} 
+                      variant="destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  
+                  {/* Item Owners Manager */}
+                  <ItemOwnersManager itemId={item.id} />
                 </div>
               ) : (
-                /* Buyer/Renter Actions */
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <Button 
-                    onClick={handleMessageOwner}
-                    variant="outline"
-                    className="w-full gap-2"
+                    onClick={handleMessageOwner} 
+                    variant="outline" 
+                    className="w-full"
                   >
-                    <MessageCircle className="h-4 w-4" />
-                    {t('itemDetail.contactOwner')}
+                    <MessageCircle className="mr-2 h-4 w-4" />
+                    {t('Contact Owner')}
                   </Button>
                   
-                  <div className="flex gap-3">
-                    {(item.listing_type === "sell" || item.listing_type === "both") && (
-                      <Button 
-                        variant="community" 
-                        className="flex-1 gap-2"
-                        onClick={() => handleRequestClick("buy")}
-                      >
-                        <ShoppingCart className="h-4 w-4" />
-                        {t('itemDetail.buyNow')}
-                      </Button>
-                    )}
-                    {(item.listing_type === "rent" || item.listing_type === "both") && (
-                      <Button 
-                        variant="warm" 
-                        className="flex-1 gap-2"
-                        onClick={() => handleRequestClick("rent")}
-                      >
-                        <Calendar className="h-4 w-4" />
-                        {t('itemDetail.rentNow')}
-                      </Button>
-                    )}
-                  </div>
+                  {(item.listing_type === 'sell' || item.listing_type === 'both') && (
+                    <Button 
+                      onClick={() => handleRequestClick('buy')} 
+                      className="w-full"
+                    >
+                      <ShoppingCart className="mr-2 h-4 w-4" />
+                      {t('Buy Now')} - ${item.sale_price}
+                    </Button>
+                  )}
+                  
+                  {(item.listing_type === 'rent' || item.listing_type === 'both') && (
+                    <Button 
+                      onClick={() => handleRequestClick('rent')} 
+                      variant="outline" 
+                      className="w-full"
+                    >
+                      <Calendar className="mr-2 h-4 w-4" />
+                      {t('Rent Now')} - ${item.rental_price}/{item.rental_period}
+                    </Button>
+                  )}
                 </div>
               )}
             </div>

@@ -40,7 +40,6 @@ export const RequestDialog = ({ isOpen, onClose, item, requestType }: RequestDia
     try {
       await createRequest({
         itemId: item.id,
-        ownerId: item.user_id,
         requestType,
         offeredPrice: offeredPrice || undefined,
         rentalStartDate: startDate?.toISOString(),

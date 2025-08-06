@@ -138,7 +138,6 @@ export const useItemRequests = (itemId?: string) => {
   const createRequestMutation = useMutation({
     mutationFn: async (data: {
       itemId: string;
-      ownerId: string;
       requestType: "buy" | "rent";
       offeredPrice?: number;
       rentalStartDate?: string;
@@ -147,12 +146,23 @@ export const useItemRequests = (itemId?: string) => {
     }) => {
       if (!user?.id) throw new Error("Must be logged in");
 
+      // Get all owners of the item (we'll use the first one as the primary owner for the request)
+      const { data: ownersData, error: ownersError } = await supabase
+        .from('item_owners')
+        .select('user_id')
+        .eq('item_id', data.itemId)
+        .order('created_at', { ascending: true })
+        .limit(1);
+
+      if (ownersError) throw ownersError;
+      if (!ownersData || ownersData.length === 0) throw new Error("No owners found for this item");
+
       const { data: result, error } = await supabase
         .from("item_requests")
         .insert({
           item_id: data.itemId,
           requester_id: user.id,
-          owner_id: data.ownerId,
+          owner_id: ownersData[0].user_id, // Use the primary owner
           request_type: (data.requestType === "buy" ? "sell" : data.requestType) as any,
           offered_price: data.offeredPrice,
           rental_start_date: data.rentalStartDate,
