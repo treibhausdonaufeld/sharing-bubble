@@ -153,7 +153,7 @@ export const useItemRequests = (itemId?: string) => {
           item_id: data.itemId,
           requester_id: user.id,
           owner_id: data.ownerId,
-          request_type: data.requestType as any,
+          request_type: (data.requestType === "buy" ? "sell" : data.requestType) as any,
           offered_price: data.offeredPrice,
           rental_start_date: data.rentalStartDate,
           rental_end_date: data.rentalEndDate,
