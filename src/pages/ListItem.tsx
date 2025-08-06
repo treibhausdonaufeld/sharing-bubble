@@ -181,7 +181,6 @@ const ListItem = () => {
           .from('items')
           .update(itemData)
           .eq('id', editItemId)
-          .eq('user_id', user.id)
           .select()
           .single();
       } else {
@@ -191,6 +190,19 @@ const ListItem = () => {
           .insert(itemData)
           .select()
           .single();
+        
+        if (result.error) throw result.error;
+        
+        // Create ownership record for new items
+        const { error: ownerError } = await supabase
+          .from('item_owners')
+          .insert({
+            item_id: result.data.id,
+            user_id: user.id,
+            role: 'owner'
+          });
+          
+        if (ownerError) throw ownerError;
       }
 
       if (result.error) throw result.error;
