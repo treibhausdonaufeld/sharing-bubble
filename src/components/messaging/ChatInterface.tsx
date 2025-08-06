@@ -32,6 +32,7 @@ export const ChatInterface = ({
   const { requests } = useItemRequests(itemId);
   const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Filter requests for this conversation
   const conversationRequests = requests.filter(request => 
@@ -64,6 +65,10 @@ export const ChatInterface = ({
         itemId: itemId,
       });
       setNewMessage("");
+      // Keep focus on input after sending
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 0);
     } catch (error) {
       console.error("Error sending message:", error);
     }
@@ -146,6 +151,7 @@ export const ChatInterface = ({
       <div className="p-4 border-t border-border bg-background/50 backdrop-blur-sm">
         <div className="flex gap-2">
           <Input
+            ref={inputRef}
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyPress={handleKeyPress}
