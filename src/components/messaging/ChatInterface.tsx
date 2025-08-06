@@ -48,6 +48,24 @@ export const ChatInterface = ({
     scrollToBottom();
   }, [messages]);
 
+  // Focus input when component mounts or conversation changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      inputRef.current?.focus();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [conversationUserId]);
+
+  // Keep focus on input after messages update
+  useEffect(() => {
+    if (messages.length > 0) {
+      const timer = setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [messages.length]);
+
   // Mark unread messages as read
   useEffect(() => {
     messages
@@ -65,10 +83,6 @@ export const ChatInterface = ({
         itemId: itemId,
       });
       setNewMessage("");
-      // Keep focus on input after sending
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 0);
     } catch (error) {
       console.error("Error sending message:", error);
     }
