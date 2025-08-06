@@ -74,13 +74,23 @@ export const ChatInterface = ({
   }, [messages, user?.id, markAsRead]);
 
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || !user) return;
+    if (!newMessage.trim() || !user || !itemId) return;
+
+    // Find the most recent request for this conversation
+    const activeRequest = conversationRequests
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
+
+    if (!activeRequest) {
+      console.error("No active request found for this conversation");
+      return;
+    }
 
     try {
       await sendMessage({
         content: newMessage.trim(),
         recipientId: conversationUserId,
         itemId: itemId,
+        requestId: activeRequest.id,
       });
       setNewMessage("");
     } catch (error) {

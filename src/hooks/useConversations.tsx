@@ -78,14 +78,17 @@ export const useConversations = () => {
       // Group conversations by user + item combination
       const conversationMap = new Map<string, ExtendedConversation>();
       
-      // Process messages
+      // Process messages - only include messages that have an item_id and request_id
       messages?.forEach((message) => {
+        // Skip messages that don't have both item_id and request_id
+        if (!message.item_id || !message.request_id) return;
+        
         const isCurrentUserSender = message.sender_id === user.id;
         const otherUserId = isCurrentUserSender ? message.recipient_id : message.sender_id;
         const otherUserProfile = profileMap.get(otherUserId);
-        const item = message.item_id ? itemMap.get(message.item_id) : null;
+        const item = itemMap.get(message.item_id);
         
-        const conversationKey = message.item_id ? `${otherUserId}-${message.item_id}` : otherUserId;
+        const conversationKey = `${otherUserId}-${message.item_id}`;
         
         if (!conversationMap.has(conversationKey)) {
           conversationMap.set(conversationKey, {
@@ -95,7 +98,7 @@ export const useConversations = () => {
             last_message: message.content,
             last_message_time: message.created_at,
             unread_count: 0,
-            item_id: message.item_id || undefined,
+            item_id: message.item_id,
             item_title: item?.title,
             has_pending_requests: false,
             pending_request_count: 0,

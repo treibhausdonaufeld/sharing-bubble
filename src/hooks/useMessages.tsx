@@ -90,10 +90,11 @@ export const useMessages = (conversationUserId?: string) => {
     }: { 
       content: string; 
       recipientId: string; 
-      itemId?: string; 
-      requestId?: string; 
+      itemId: string; 
+      requestId: string; 
     }) => {
       if (!user) throw new Error('User not authenticated');
+      if (!itemId || !requestId) throw new Error('Item ID and Request ID are required for messaging');
 
       const { data, error } = await supabase
         .from('messages')
