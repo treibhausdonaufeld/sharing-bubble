@@ -30,6 +30,7 @@ const categories = [
   { id: "garden", name: "Garden", icon: Flower2 },
   { id: "toys", name: "Toys", icon: Gamepad2 },
   { id: "vehicles", name: "Vehicles", icon: Car },
+  { id: "rooms", name: "Rooms", icon: Sofa },
   { id: "other", name: "Other", icon: MoreHorizontal },
 ];
 
@@ -55,6 +56,7 @@ export const CategoryFilter = ({ selectedCategory, onCategoryChange }: CategoryF
       case "garden": return t('category.garden');
       case "toys": return t('category.toys');
       case "vehicles": return t('category.vehicles');
+      case "rooms": return t('category.rooms');
       case "other": return t('category.other');
       default: return id;
     }

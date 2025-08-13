@@ -39,7 +39,7 @@ const ListItem = () => {
 
   const categories = [
     'electronics', 'furniture', 'clothing', 'books', 'sports', 
-    'tools', 'kitchen', 'garden', 'toys', 'vehicles', 'other'
+    'tools', 'kitchen', 'garden', 'toys', 'vehicles', 'rooms', 'other'
   ];
 
   const conditions = ['new', 'like_new', 'good', 'fair', 'poor'];
@@ -332,13 +332,20 @@ const ListItem = () => {
                     <SelectValue placeholder="Select listing type" />
                   </SelectTrigger>
                   <SelectContent>
-                    {listingTypes.map((type) => (
+                    {listingTypes
+                      .filter(type => formData.category !== 'rooms' || type !== 'sell')
+                      .map((type) => (
                       <SelectItem key={type} value={type}>
                         {type.charAt(0).toUpperCase() + type.slice(1)}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+                {formData.category === 'rooms' && (
+                  <p className="text-sm text-muted-foreground">
+                    Rooms can only be rented, not sold.
+                  </p>
+                )}
               </div>
 
               {formData.listing_type !== 'rent' && (
