@@ -157,6 +157,16 @@ const ListItem = () => {
       return;
     }
 
+    // Validate required fields
+    if (!formData.title || !formData.category || !formData.condition || !formData.listing_type) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
     
     try {
