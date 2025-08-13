@@ -565,6 +565,7 @@ export type Database = {
         | "toys"
         | "vehicles"
         | "other"
+        | "rooms"
       item_condition: "new" | "used" | "broken"
       item_status: "draft" | "available" | "reserved" | "rented" | "sold"
       listing_type: "sell" | "rent" | "both"
@@ -715,6 +716,7 @@ export const Constants = {
         "toys",
         "vehicles",
         "other",
+        "rooms",
       ],
       item_condition: ["new", "used", "broken"],
       item_status: ["draft", "available", "reserved", "rented", "sold"],
