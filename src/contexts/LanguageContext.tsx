@@ -66,6 +66,7 @@ const translations = {
     'category.garden': 'Garden',
     'category.toys': 'Toys',
     'category.vehicles': 'Vehicles',
+    'category.rooms': 'Rooms',
     'category.other': 'Other',
     
     // Conditions
@@ -179,6 +180,7 @@ const translations = {
     'category.garden': 'Garten',
     'category.toys': 'Spielzeug',
     'category.vehicles': 'Fahrzeuge',
+    'category.rooms': 'Räume',
     'category.other': 'Sonstiges',
     
     // Conditions
