@@ -12,8 +12,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dev
-    ports:
-      - "3000:8080"
+    # ports:
+    #   - "3000:8080"
     volumes:
       - .:/app
     profiles:
@@ -72,9 +72,9 @@ services:
     container_name: supabase-kong
     image: kong:2.8.1
     restart: unless-stopped
-    ports:
-      - ${KONG_HTTP_PORT}:8000/tcp
-      - ${KONG_HTTPS_PORT}:8443/tcp
+    # ports:
+    #   - ${KONG_HTTP_PORT}:8000/tcp
+    #   - ${KONG_HTTPS_PORT}:8443/tcp
     volumes:
       # https://github.com/supabase/supabase/issues/12661
       - ./volumes/api/kong.yml:/home/kong/temp.yml:ro,z
@@ -368,8 +368,8 @@ services:
     container_name: supabase-analytics
     image: supabase/logflare:1.14.2
     restart: unless-stopped
-    ports:
-      - 4000:4000
+    # ports:
+    #   - 4000:4000
     # Uncomment to use Big Query backend for analytics
     # volumes:
     #   - type: bind
@@ -505,9 +505,9 @@ services:
     container_name: supabase-pooler
     image: supabase/supavisor:2.5.7
     restart: unless-stopped
-    ports:
-      - ${POSTGRES_PORT}:5432
-      - ${POOLER_PROXY_PORT_TRANSACTION}:6543
+    # ports:
+    #   - ${POSTGRES_PORT}:5432
+    #   - ${POOLER_PROXY_PORT_TRANSACTION}:6543
     volumes:
       - ./volumes/pooler/pooler.exs:/etc/pooler/pooler.exs:ro,z
     healthcheck:
