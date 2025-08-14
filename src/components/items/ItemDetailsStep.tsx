@@ -56,7 +56,7 @@ export const ItemDetailsStep = ({
     'tools', 'kitchen', 'garden', 'toys', 'vehicles', 'rooms', 'other'
   ];
 
-  const conditions = ['new', 'like_new', 'good', 'fair', 'poor'];
+  const conditions = ['new', 'used', 'broken'];
   const listingTypes = ['sell', 'rent', 'both'];
   const rentalPeriods = ['hourly', 'daily', 'weekly'];
 
