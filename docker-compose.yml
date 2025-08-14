@@ -23,10 +23,24 @@ services:
     depends_on:
       - kong
 
-  # proxy:
-  #   image: ghcr.io/firlevapz/keycloak-oidc-proxy:latest
-  #   environment:
-  #     - OIDC_CONFIGURATION_URL=https://auth.treibhausdonaufeld.at/application/o/bubble/.well-known/openid-configuration
+  migrations:
+    image: node:latest
+    volumes:
+      - .:/app
+    # environment:
+    #   DB_URL: postgres://postgres.${POOLER_TENANT_ID}:${POSTGRES_PASSWORD}@supavisor:${POSTGRES_PORT}/${POSTGRES_DB}
+
+    command:
+      - sh
+      - -lc
+      - |
+        cd && \
+        npm i supabase@latest && \
+        cd /app && \
+        /root/node_modules/.bin/supabase db push --db-url postgres://postgres.${POOLER_TENANT_ID}:${POSTGRES_PASSWORD}@supavisor:5432/${POSTGRES_DB}
+    depends_on:
+      - kong
+      - supavisor
 
   studio:
     container_name: supabase-studio
