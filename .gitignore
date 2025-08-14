@@ -23,6 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 
+supabase/.temp
+
 volumes/db/data/
 .env
 docker-compose.override.yml
