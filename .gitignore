@@ -24,3 +24,5 @@ dist-ssr
 *.sw?
 
 volumes/db/data/
+.env
+docker-compose.override.yml
