@@ -124,6 +124,7 @@ export const ImageUploadStep = ({ onComplete, onBack }: ImageUploadStepProps) =>
         .select()
         .single();
 
+      console.log(itemError);
       if (itemError) throw itemError;
 
       // Create ownership record for the temporary item
