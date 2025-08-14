@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ImageManager } from '@/components/items/ImageManager';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ArrowLeft } from 'lucide-react';
+import { AuthDebugger } from '@/components/debug/AuthDebugger';
 
 const ListItem = () => {
   const { user } = useAuth();
@@ -263,6 +264,11 @@ const ListItem = () => {
     <div className="min-h-screen bg-background">
       <Header />
       <div className="container mx-auto max-w-2xl px-4 py-8">
+        {/* Debug Section */}
+        <div className="mb-8">
+          <AuthDebugger />
+        </div>
+        
         {/* Back Button */}
         <Button 
           variant="ghost" 
