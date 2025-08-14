@@ -124,9 +124,18 @@ export const ImageUploadStep = ({ onComplete, onBack }: ImageUploadStepProps) =>
         .select()
         .single();
 
-      console.log('Temp item creation result:', { tempItem, itemError });
-
       if (itemError) throw itemError;
+
+      // Create ownership record for the temporary item
+      const { error: ownerError } = await supabase
+        .from('item_owners')
+        .insert({
+          item_id: tempItem.id,
+          user_id: user.id,
+          role: 'owner'
+        });
+
+      if (ownerError) throw ownerError;
       
       setTempItemId(tempItem.id);
       setProgress(30);
