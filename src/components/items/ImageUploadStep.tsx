@@ -8,6 +8,7 @@ import { ImageManager } from './ImageManager';
 import { useToast } from '@/hooks/use-toast';
 import { useImageProcessing } from '@/hooks/useImageProcessing';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 
 interface ImageUploadStepProps {
@@ -30,6 +31,7 @@ export const ImageUploadStep = ({ onComplete, onBack }: ImageUploadStepProps) =>
   const { toast } = useToast();
   const { language } = useLanguage();
   const { createProcessingJob, subscribeToProcessingUpdates } = useImageProcessing();
+  const { user } = useAuth(); // Use the auth context instead
   
   const [images, setImages] = useState<{ url: string; file: File }[]>([]);
   const [processingState, setProcessingState] = useState<ProcessingState>('idle');
@@ -102,10 +104,11 @@ export const ImageUploadStep = ({ onComplete, onBack }: ImageUploadStepProps) =>
       setProgress(10);
 
       // Create a temporary item record for processing
-      const { data: { user } } = await supabase.auth.getUser();
+      console.log('Current user from auth context:', user);
+      console.log('User ID for temp item:', user?.id);
       
-      if (!user) {
-        throw new Error('User not authenticated');
+      if (!user?.id) {
+        throw new Error('User not authenticated - no user ID available');
       }
 
       const { data: tempItem, error: itemError } = await supabase
@@ -120,6 +123,8 @@ export const ImageUploadStep = ({ onComplete, onBack }: ImageUploadStepProps) =>
         })
         .select()
         .single();
+
+      console.log('Temp item creation result:', { tempItem, itemError });
 
       if (itemError) throw itemError;
       
