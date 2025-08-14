@@ -264,11 +264,6 @@ const ListItem = () => {
     <div className="min-h-screen bg-background">
       <Header />
       <div className="container mx-auto max-w-2xl px-4 py-8">
-        {/* Debug Section */}
-        <div className="mb-8">
-          <AuthDebugger />
-        </div>
-        
         {/* Back Button */}
         <Button 
           variant="ghost" 
@@ -424,6 +419,11 @@ const ListItem = () => {
             </form>
           </CardContent>
         </Card>
+        
+        {/* Debug Section */}
+        <div className="mt-8">
+          <AuthDebugger />
+        </div>
       </div>
     </div>
   );
