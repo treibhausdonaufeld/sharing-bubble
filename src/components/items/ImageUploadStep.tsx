@@ -102,11 +102,17 @@ export const ImageUploadStep = ({ onComplete, onBack }: ImageUploadStepProps) =>
       setProgress(10);
 
       // Create a temporary item record for processing
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
       const { data: tempItem, error: itemError } = await supabase
         .from('items')
         .insert({
           title: 'Temporary Item for Processing',
-          user_id: (await supabase.auth.getUser()).data.user?.id!,
+          user_id: user.id,
           category: 'other',
           condition: 'used',
           listing_type: 'sell',
