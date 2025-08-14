@@ -23,6 +23,7 @@ interface WizardData {
   };
   skipAI?: boolean;
   skipImages?: boolean;
+  tempItemId?: string;
 }
 
 const ListItemWizard = () => {
@@ -49,49 +50,35 @@ const ListItemWizard = () => {
   };
 
   const handleImageStepComplete = (data: WizardData) => {
-    setWizardData(data);
+    setWizardData(prev => ({ ...prev, ...data }));
     setCurrentStep('details');
   };
 
-  const uploadImages = async (itemId: string) => {
+  const updateImageRecords = async (oldItemId: string, newItemId: string) => {
     if (!wizardData.images || wizardData.images.length === 0) return;
 
-    const uploadPromises = wizardData.images.map(async (image, index) => {
-      const fileExt = image.file.name.split('.').pop();
-      const fileName = `${itemId}/${Date.now()}-${index}.${fileExt}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('item-images')
-        .upload(fileName, image.file);
+    // Update existing image records to point to the new item
+    const { error } = await supabase
+      .from('item_images')
+      .update({ item_id: newItemId })
+      .eq('item_id', oldItemId);
 
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('item-images')
-        .getPublicUrl(fileName);
-
-      const isPrimary = index === 0;
-
-      return supabase
-        .from('item_images')
-        .insert({
-          item_id: itemId,
-          image_url: publicUrl,
-          is_primary: isPrimary,
-          display_order: index
-        });
-    });
-
-    await Promise.all(uploadPromises);
+    if (error) throw error;
   };
 
-  const createProcessingJob = async (itemId: string) => {
+  const updateProcessingJob = async (oldItemId: string, newItemId: string) => {
     if (wizardData.skipAI || wizardData.skipImages || !wizardData.images?.length) return;
 
     try {
-      await createImageProcessingJob(itemId, wizardData.images, language);
+      // Update processing job to point to the new item
+      const { error } = await supabase
+        .from('item_processing_jobs')
+        .update({ item_id: newItemId })
+        .eq('item_id', oldItemId);
+
+      if (error) throw error;
     } catch (error) {
-      console.error('Error creating processing job:', error);
+      console.error('Error updating processing job:', error);
       // Non-blocking error - don't fail the item creation
     }
   };
@@ -126,7 +113,7 @@ const ListItemWizard = () => {
         status: 'available' as Database['public']['Enums']['item_status']
       };
 
-      // Create the item
+      // Create the final item
       const { data: item, error: itemError } = await supabase
         .from('items')
         .insert(itemData)
@@ -146,13 +133,20 @@ const ListItemWizard = () => {
 
       if (ownerError) throw ownerError;
 
-      // Upload images if any
-      if (wizardData.images && wizardData.images.length > 0) {
-        await uploadImages(item.id);
+      // If we have a temporary item from AI processing, transfer its data
+      if (wizardData.tempItemId) {
+        // Update image records to point to the new item
+        await updateImageRecords(wizardData.tempItemId, item.id);
+        
+        // Update processing job to point to the new item
+        await updateProcessingJob(wizardData.tempItemId, item.id);
+        
+        // Delete the temporary item
+        await supabase
+          .from('items')
+          .delete()
+          .eq('id', wizardData.tempItemId);
       }
-
-      // Create processing job record
-      await createProcessingJob(item.id);
 
       toast({
         title: "Success",

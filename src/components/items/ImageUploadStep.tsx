@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -6,6 +6,9 @@ import { Badge } from '@/components/ui/badge';
 import { Upload, CheckCircle, Loader, Sparkles, SkipForward, ArrowRight } from 'lucide-react';
 import { ImageManager } from './ImageManager';
 import { useToast } from '@/hooks/use-toast';
+import { useImageProcessing } from '@/hooks/useImageProcessing';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ImageUploadStepProps {
   onComplete: (data: {
@@ -16,6 +19,7 @@ interface ImageUploadStepProps {
       title?: string;
       description?: string;
     };
+    tempItemId?: string;
   }) => void;
   onBack: () => void;
 }
@@ -24,6 +28,9 @@ type ProcessingState = 'idle' | 'uploading' | 'processing' | 'completed' | 'erro
 
 export const ImageUploadStep = ({ onComplete, onBack }: ImageUploadStepProps) => {
   const { toast } = useToast();
+  const { language } = useLanguage();
+  const { createProcessingJob, subscribeToProcessingUpdates } = useImageProcessing();
+  
   const [images, setImages] = useState<{ url: string; file: File }[]>([]);
   const [processingState, setProcessingState] = useState<ProcessingState>('idle');
   const [progress, setProgress] = useState(0);
@@ -31,6 +38,7 @@ export const ImageUploadStep = ({ onComplete, onBack }: ImageUploadStepProps) =>
     title?: string;
     description?: string;
   }>({});
+  const [tempItemId, setTempItemId] = useState<string | null>(null);
 
   const handleSkipImages = () => {
     onComplete({ images: [], skipImages: true });
@@ -48,6 +56,37 @@ export const ImageUploadStep = ({ onComplete, onBack }: ImageUploadStepProps) =>
     onComplete({ images, skipAI: true });
   };
 
+  const uploadImagesToStorage = useCallback(async (itemId: string) => {
+    const uploadedImages: { url: string; file: File }[] = [];
+    
+    for (const image of images) {
+      try {
+        const fileExt = image.file.name.split('.').pop();
+        const fileName = `${itemId}/${Date.now()}.${fileExt}`;
+        
+        const { data, error } = await supabase.storage
+          .from('item-images')
+          .upload(fileName, image.file);
+
+        if (error) throw error;
+
+        const { data: publicUrl } = supabase.storage
+          .from('item-images')
+          .getPublicUrl(fileName);
+
+        uploadedImages.push({
+          url: publicUrl.publicUrl,
+          file: image.file
+        });
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        throw error;
+      }
+    }
+    
+    return uploadedImages;
+  }, [images]);
+
   const handleProceedWithAI = async () => {
     if (images.length === 0) {
       toast({
@@ -58,50 +97,96 @@ export const ImageUploadStep = ({ onComplete, onBack }: ImageUploadStepProps) =>
       return;
     }
 
-    setProcessingState('uploading');
-    setProgress(20);
+    try {
+      setProcessingState('uploading');
+      setProgress(10);
 
-    // Simulate processing steps
-    setTimeout(() => {
-      setProcessingState('processing');
-      setProgress(60);
+      // Create a temporary item record for processing
+      const { data: tempItem, error: itemError } = await supabase
+        .from('items')
+        .insert({
+          title: 'Temporary Item for Processing',
+          user_id: (await supabase.auth.getUser()).data.user?.id!,
+          category: 'other',
+          condition: 'used',
+          listing_type: 'sell',
+          status: 'draft'
+        })
+        .select()
+        .single();
+
+      if (itemError) throw itemError;
       
-      // Simulate AI processing
-      setTimeout(() => {
-        setProcessingState('completed');
-        setProgress(100);
-        
-        // Simulate AI-generated content
-        setAiGeneratedData({
-          title: "Beautiful Item", // Placeholder - will be replaced with actual AI
-          description: "A wonderful item with great features and excellent condition." // Placeholder
-        });
+      setTempItemId(tempItem.id);
+      setProgress(30);
 
-        toast({
-          title: "Processing Complete!",
-          description: "AI has analyzed your images and generated suggestions.",
-        });
+      // Upload images to storage
+      const uploadedImages = await uploadImagesToStorage(tempItem.id);
+      setProgress(50);
+
+      // Create processing job and start AI processing
+      setProcessingState('processing');
+      const job = await createProcessingJob(tempItem.id, uploadedImages, language);
+      
+      if (!job) throw new Error('Failed to create processing job');
+
+      // Subscribe to processing updates
+      const unsubscribe = subscribeToProcessingUpdates(tempItem.id, (updatedJob) => {
+        if (updatedJob.status === 'processing') {
+          setProgress(70);
+        } else if (updatedJob.status === 'completed') {
+          setProcessingState('completed');
+          setProgress(100);
+          
+          // Set AI generated data
+          const aiData = {
+            title: updatedJob.ai_generated_title || '',
+            description: updatedJob.ai_generated_description || ''
+          };
+          setAiGeneratedData(aiData);
+
+          toast({
+            title: "Processing Complete!",
+            description: "AI has analyzed your images and generated suggestions.",
+          });
 
         // Auto-proceed after showing results
         setTimeout(() => {
           onComplete({ 
-            images, 
-            aiGeneratedData: {
-              title: aiGeneratedData.title,
-              description: aiGeneratedData.description
-            }
+            images: uploadedImages, 
+            aiGeneratedData: aiData,
+            tempItemId: tempItem.id
           });
+          unsubscribe();
         }, 2000);
-      }, 3000);
-    }, 2000);
+        } else if (updatedJob.status === 'failed') {
+          setProcessingState('error');
+          toast({
+            title: "Processing Failed",
+            description: updatedJob.error_message || "AI processing failed. Please try again.",
+            variant: "destructive",
+          });
+          unsubscribe();
+        }
+      });
+
+    } catch (error) {
+      console.error('Error in AI processing:', error);
+      setProcessingState('error');
+      toast({
+        title: "Processing Error",
+        description: "Failed to process images. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const getProcessingMessage = () => {
     switch (processingState) {
       case 'uploading':
-        return 'Uploading images and creating thumbnails...';
+        return 'Uploading images to storage...';
       case 'processing':
-        return 'AI is analyzing your images...';
+        return 'AI is analyzing your images and generating content...';
       case 'completed':
         return 'Processing complete!';
       case 'error':
@@ -175,7 +260,7 @@ export const ImageUploadStep = ({ onComplete, onBack }: ImageUploadStepProps) =>
 
           {/* Action Buttons */}
           <div className="flex flex-col gap-3">
-            {!isProcessing && processingState !== 'completed' && (
+            {!isProcessing && processingState !== 'completed' && processingState !== 'error' && (
               <>
                 <Button 
                   onClick={handleProceedWithAI}
@@ -212,6 +297,28 @@ export const ImageUploadStep = ({ onComplete, onBack }: ImageUploadStepProps) =>
             {processingState === 'completed' && (
               <div className="text-center text-sm text-muted-foreground">
                 Proceeding to item details...
+              </div>
+            )}
+
+            {processingState === 'error' && (
+              <div className="flex gap-2">
+                <Button 
+                  onClick={handleProceedWithAI}
+                  disabled={images.length === 0}
+                  className="flex-1 gap-2"
+                >
+                  <Sparkles className="h-4 w-4" />
+                  Retry AI Processing
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={handleSkipAI}
+                  disabled={images.length === 0}
+                  className="flex-1 gap-2"
+                >
+                  <SkipForward className="h-4 w-4" />
+                  Continue Manually
+                </Button>
               </div>
             )}
           </div>
