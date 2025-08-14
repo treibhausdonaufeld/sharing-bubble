@@ -9,6 +9,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import ListItem from "./pages/ListItem";
+import ListItemWizard from "./pages/ListItemWizard";
 import Messages from "./pages/Messages";
 import ItemDetail from "./pages/ItemDetail";
 import MyItems from "./pages/MyItems";
@@ -29,7 +30,8 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
-              <Route path="/list-item" element={<ListItem />} />
+              <Route path="/list-item" element={<ListItemWizard />} />
+              <Route path="/list-item-legacy" element={<ListItem />} />
               <Route path="/item/:itemId" element={<ItemDetail />} />
               <Route path="/my-items" element={<MyItems />} />
               <Route path="/profile" element={<Profile />} />
