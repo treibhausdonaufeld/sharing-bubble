@@ -18,7 +18,7 @@ serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
     
-    const { jobId } = await req.json();
+    const { jobId, userLanguage = 'en' } = await req.json();
     
     if (!jobId) {
       throw new Error('Job ID is required');
@@ -92,7 +92,8 @@ serve(async (req) => {
       const { error: aiError } = await supabase.functions.invoke('generate-item-content', {
         body: { 
           jobId,
-          primaryImageUrl: originalImages[0]
+          primaryImageUrl: originalImages[0],
+          userLanguage
         }
       });
 

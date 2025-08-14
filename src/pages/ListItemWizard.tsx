@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useImageProcessing } from '@/hooks/useImageProcessing';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { ImageUploadStep } from '@/components/items/ImageUploadStep';
 import { ItemDetailsStep, ItemFormData } from '@/components/items/ItemDetailsStep';
 import { Database } from '@/integrations/supabase/types';
@@ -27,6 +29,8 @@ const ListItemWizard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { createProcessingJob: createImageProcessingJob } = useImageProcessing();
+  const { language } = useLanguage();
   const [currentStep, setCurrentStep] = useState<WizardStep>('images');
   const [wizardData, setWizardData] = useState<WizardData>({
     images: []
@@ -82,19 +86,14 @@ const ListItemWizard = () => {
   };
 
   const createProcessingJob = async (itemId: string) => {
-    if (wizardData.skipAI || wizardData.skipImages) return;
+    if (wizardData.skipAI || wizardData.skipImages || !wizardData.images?.length) return;
 
-    const originalImages = wizardData.images.map(img => img.url);
-    
-    await supabase
-      .from('item_processing_jobs')
-      .insert({
-        item_id: itemId,
-        original_images: originalImages,
-        ai_generated_title: wizardData.aiGeneratedData?.title,
-        ai_generated_description: wizardData.aiGeneratedData?.description,
-        status: wizardData.aiGeneratedData ? 'completed' : 'pending'
-      });
+    try {
+      await createImageProcessingJob(itemId, wizardData.images, language);
+    } catch (error) {
+      console.error('Error creating processing job:', error);
+      // Non-blocking error - don't fail the item creation
+    }
   };
 
   const handleDetailsComplete = async (formData: ItemFormData) => {

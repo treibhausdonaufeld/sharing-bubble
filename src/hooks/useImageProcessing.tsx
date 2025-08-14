@@ -12,7 +12,8 @@ export const useImageProcessing = () => {
 
   const createProcessingJob = useCallback(async (
     itemId: string, 
-    images: { url: string; file: File }[]
+    images: { url: string; file: File }[],
+    userLanguage = 'en'
   ) => {
     try {
       setIsProcessing(true);
@@ -35,7 +36,7 @@ export const useImageProcessing = () => {
       setProcessingJobs(prev => [...prev, data]);
 
       // Trigger background processing
-      await triggerImageProcessing(data.id);
+      await triggerImageProcessing(data.id, userLanguage);
 
       return data;
     } catch (error) {
@@ -51,11 +52,11 @@ export const useImageProcessing = () => {
     }
   }, [toast]);
 
-  const triggerImageProcessing = useCallback(async (jobId: string) => {
+  const triggerImageProcessing = useCallback(async (jobId: string, userLanguage = 'en') => {
     try {
       // Call edge function to start processing
       const { error } = await supabase.functions.invoke('process-item-images', {
-        body: { jobId }
+        body: { jobId, userLanguage }
       });
 
       if (error) throw error;
