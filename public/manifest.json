@@ -1,6 +1,6 @@
 {
-  "name": "LocalGoods - Community Network",
-  "short_name": "LocalGoods",
+  "name": "Bubble - Community Network",
+  "short_name": "Bubble",
   "description": "Share, rent, and buy items in your local community",
   "start_url": "/",
   "display": "standalone",
