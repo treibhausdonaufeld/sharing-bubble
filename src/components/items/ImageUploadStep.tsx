@@ -116,6 +116,7 @@ export const ImageUploadStep = ({ onComplete, onBack }: ImageUploadStepProps) =>
         .insert({
           title: 'Temporary Item for Processing',
           user_id: user.id,
+          description: 'empty',
           category: 'other',
           condition: 'used',
           listing_type: 'sell',
