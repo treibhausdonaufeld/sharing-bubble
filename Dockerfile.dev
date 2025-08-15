@@ -6,7 +6,7 @@ WORKDIR /app
 COPY package.json bun.lockb ./
 
 # Install dependencies with Bun
-RUN bun install
+RUN bun install && bun add -d vite
 
 # Copy source code
 COPY . .
