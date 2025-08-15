@@ -14,12 +14,9 @@ services:
       dockerfile: Dockerfile.dev
     # ports:
     #   - "3000:8080"
+    command: sh -c "bun install && bun run dev --host 0.0.0.0"
     volumes:
       - .:/app
-    profiles:
-      - dev
-    environment:
-      - NODE_ENV=development
     depends_on:
       - kong
 
@@ -27,9 +24,6 @@ services:
     image: node:latest
     volumes:
       - .:/app
-    # environment:
-    #   DB_URL: postgres://postgres.${POOLER_TENANT_ID}:${POSTGRES_PASSWORD}@supavisor:${POSTGRES_PORT}/${POSTGRES_DB}
-
     command:
       - sh
       - -lc
