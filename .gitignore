@@ -26,5 +26,6 @@ dist-ssr
 supabase/.temp
 
 volumes/db/data/
+volumes/storage/stub
 .env
 docker-compose.override.yml

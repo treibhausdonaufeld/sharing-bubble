@@ -1,15 +1,15 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Upload, CheckCircle, Loader, Sparkles, SkipForward, ArrowRight } from 'lucide-react';
-import { ImageManager } from './ImageManager';
-import { useToast } from '@/hooks/use-toast';
-import { useImageProcessing } from '@/hooks/useImageProcessing';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { useImageProcessing } from '@/hooks/useImageProcessing';
 import { supabase } from '@/integrations/supabase/client';
+import { ArrowRight, CheckCircle, Loader, SkipForward, Sparkles, Upload } from 'lucide-react';
+import { useCallback, useState } from 'react';
+import { ImageManager } from './ImageManager';
 
 interface ImageUploadStepProps {
   onComplete: (data: {
@@ -111,9 +111,15 @@ export const ImageUploadStep = ({ onComplete, onBack }: ImageUploadStepProps) =>
         throw new Error('User not authenticated - no user ID available');
       }
 
-      const { data: tempItem, error: itemError } = await supabase
+      // Generate an ID client-side to avoid needing RETURNING (which hits SELECT RLS)
+      const tempId = (typeof crypto !== 'undefined' && 'randomUUID' in crypto)
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+      const { error: itemError } = await supabase
         .from('items')
         .insert({
+          id: tempId,
           title: 'Temporary Item for Processing',
           user_id: user.id,
           description: 'empty',
@@ -121,39 +127,36 @@ export const ImageUploadStep = ({ onComplete, onBack }: ImageUploadStepProps) =>
           condition: 'used',
           listing_type: 'sell',
           status: 'draft'
-        })
-        .select()
-        .single();
+        });
 
-      console.log(itemError);
       if (itemError) throw itemError;
 
       // Create ownership record for the temporary item
       const { error: ownerError } = await supabase
         .from('item_owners')
         .insert({
-          item_id: tempItem.id,
+          item_id: tempId,
           user_id: user.id,
           role: 'owner'
         });
 
       if (ownerError) throw ownerError;
       
-      setTempItemId(tempItem.id);
+      setTempItemId(tempId);
       setProgress(30);
 
       // Upload images to storage
-      const uploadedImages = await uploadImagesToStorage(tempItem.id);
+      const uploadedImages = await uploadImagesToStorage(tempId);
       setProgress(50);
 
       // Create processing job and start AI processing
       setProcessingState('processing');
-      const job = await createProcessingJob(tempItem.id, uploadedImages, language);
+      const job = await createProcessingJob(tempId, uploadedImages, language);
       
       if (!job) throw new Error('Failed to create processing job');
 
       // Subscribe to processing updates
-      const unsubscribe = subscribeToProcessingUpdates(tempItem.id, (updatedJob) => {
+      const unsubscribe = subscribeToProcessingUpdates(tempId, (updatedJob) => {
         if (updatedJob.status === 'processing') {
           setProgress(70);
         } else if (updatedJob.status === 'completed') {
@@ -177,7 +180,7 @@ export const ImageUploadStep = ({ onComplete, onBack }: ImageUploadStepProps) =>
           onComplete({ 
             images: uploadedImages, 
             aiGeneratedData: aiData,
-            tempItemId: tempItem.id
+            tempItemId: tempId
           });
           unsubscribe();
         }, 2000);
