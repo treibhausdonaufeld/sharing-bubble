@@ -536,28 +536,28 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
-          avatar_url?: string | null
-          bio?: string | null
+          avatar_url?: never
+          bio?: never
           created_at?: string | null
-          default_location?: string | null
-          display_name?: string | null
+          default_location?: never
+          display_name?: never
           id?: string | null
           phone?: never
-          rating?: number | null
-          total_ratings?: number | null
+          rating?: never
+          total_ratings?: never
           updated_at?: string | null
           user_id?: string | null
         }
         Update: {
-          avatar_url?: string | null
-          bio?: string | null
+          avatar_url?: never
+          bio?: never
           created_at?: string | null
-          default_location?: string | null
-          display_name?: string | null
+          default_location?: never
+          display_name?: never
           id?: string | null
           phone?: never
-          rating?: number | null
-          total_ratings?: number | null
+          rating?: never
+          total_ratings?: never
           updated_at?: string | null
           user_id?: string | null
         }
