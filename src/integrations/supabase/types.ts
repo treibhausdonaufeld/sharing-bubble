@@ -315,6 +315,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
+          {
+            foreignKeyName: "items_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       messages: {
@@ -514,7 +521,48 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string | null
+          default_location: string | null
+          display_name: string | null
+          id: string | null
+          phone: string | null
+          rating: number | null
+          total_ratings: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          default_location?: string | null
+          display_name?: string | null
+          id?: string | null
+          phone?: never
+          rating?: number | null
+          total_ratings?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          default_location?: string | null
+          display_name?: string | null
+          id?: string | null
+          phone?: never
+          rating?: number | null
+          total_ratings?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       binary_quantize: {
