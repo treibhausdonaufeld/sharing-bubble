@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ImageManager } from '@/components/items/ImageManager';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ArrowLeft } from 'lucide-react';
-import { AuthDebugger } from '@/components/debug/AuthDebugger';
+
 
 const ListItem = () => {
   const { user } = useAuth();
@@ -419,11 +419,6 @@ const ListItem = () => {
             </form>
           </CardContent>
         </Card>
-        
-        {/* Debug Section */}
-        <div className="mt-8">
-          <AuthDebugger />
-        </div>
       </div>
     </div>
   );
