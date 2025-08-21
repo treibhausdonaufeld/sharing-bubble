@@ -1,11 +1,12 @@
-import { useState, useCallback, useEffect } from 'react';
-import { Upload, X, Image, GripVertical, Trash2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/integrations/supabase/client';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { Camera, GripVertical, Image, X } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface ExistingImage {
   id: string;
@@ -38,6 +39,7 @@ export const ImageManager = ({
   const [currentExistingImages, setCurrentExistingImages] = useState<ExistingImage[]>(existingImages);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     setCurrentExistingImages(existingImages);
@@ -45,9 +47,9 @@ export const ImageManager = ({
 
   const totalImages = currentExistingImages.length + newImages.length;
 
-  const handleFileSelect = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files || []);
-    
+  const processFiles = useCallback((files: File[]) => {
+    if (files.length === 0) return;
+
     if (totalImages + files.length > maxImages) {
       toast({
         title: "Too many images",
@@ -58,7 +60,6 @@ export const ImageManager = ({
     }
 
     const validNewImages: NewImage[] = [];
-    
     for (const file of files) {
       if (!file.type.startsWith('image/')) {
         toast({
@@ -68,7 +69,6 @@ export const ImageManager = ({
         });
         continue;
       }
-
       if (file.size > 5 * 1024 * 1024) { // 5MB limit
         toast({
           title: "File too large",
@@ -77,15 +77,26 @@ export const ImageManager = ({
         });
         continue;
       }
-
       const url = URL.createObjectURL(file);
       validNewImages.push({ url, file });
     }
 
-    const updatedNewImages = [...newImages, ...validNewImages];
-    setNewImages(updatedNewImages);
-    onImagesChange(updatedNewImages);
+    if (validNewImages.length > 0) {
+      const updatedNewImages = [...newImages, ...validNewImages];
+      setNewImages(updatedNewImages);
+      onImagesChange(updatedNewImages);
+    }
   }, [newImages, totalImages, maxImages, onImagesChange, toast]);
+
+  const handleFileSelect = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    processFiles(files);
+  }, [processFiles]);
+
+  const handleCameraCapture = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    processFiles(files);
+  }, [processFiles]);
 
   const removeNewImage = useCallback((index: number) => {
     const updatedImages = newImages.filter((_, i) => i !== index);
@@ -254,25 +265,67 @@ export const ImageManager = ({
           </div>
         ))}
         
-        {/* Add New Image Button */}
+        {/* Add New Image Button(s) */}
         {totalImages < maxImages && (
-          <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg h-32 flex flex-col items-center justify-center hover:border-muted-foreground/50 transition-colors">
-            <Input
-              id="images"
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={handleFileSelect}
-              className="hidden"
-            />
-            <Label
-              htmlFor="images"
-              className="cursor-pointer flex flex-col items-center justify-center h-full w-full"
-            >
-              <Image className="h-8 w-8 text-muted-foreground mb-2" />
-              <span className="text-sm text-muted-foreground">Add Image</span>
-            </Label>
-          </div>
+          isMobile ? (
+            <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg h-32 flex flex-col items-stretch justify-center p-2 gap-2">
+              {/* Hidden inputs */}
+              <Input
+                id="camera-image"
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handleCameraCapture}
+                className="hidden"
+              />
+              <Input
+                id="device-images"
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+              {/* Buttons */}
+              <div className="flex items-center gap-2">
+                <Label
+                  htmlFor="camera-image"
+                  className="cursor-pointer flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md border hover:bg-muted/50"
+                >
+                  <Camera className="h-5 w-5 text-muted-foreground" />
+                  <span className="text-sm">Use Camera</span>
+                </Label>
+                <Label
+                  htmlFor="device-images"
+                  className="cursor-pointer flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md border hover:bg-muted/50"
+                >
+                  <Image className="h-5 w-5 text-muted-foreground" />
+                  <span className="text-sm">Upload Files</span>
+                </Label>
+              </div>
+              <span className="text-[11px] text-muted-foreground text-center">
+                You can add more after each capture/upload.
+              </span>
+            </div>
+          ) : (
+            <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg h-32 flex flex-col items-center justify-center hover:border-muted-foreground/50 transition-colors">
+              <Input
+                id="images"
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+              <Label
+                htmlFor="images"
+                className="cursor-pointer flex flex-col items-center justify-center h-full w-full"
+              >
+                <Image className="h-8 w-8 text-muted-foreground mb-2" />
+                <span className="text-sm text-muted-foreground">Add Image</span>
+              </Label>
+            </div>
+          )
         )}
       </div>
       
