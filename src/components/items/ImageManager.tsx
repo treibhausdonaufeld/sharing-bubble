@@ -268,7 +268,7 @@ export const ImageManager = ({
         {/* Add New Image Button(s) */}
         {totalImages < maxImages && (
           isMobile ? (
-            <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg h-32 flex flex-col items-stretch justify-center p-2 gap-2">
+            <div className="flex flex-col items-stretch justify-center p-2 gap-2">
               {/* Hidden inputs */}
               <Input
                 id="camera-image"
@@ -292,20 +292,17 @@ export const ImageManager = ({
                   htmlFor="camera-image"
                   className="cursor-pointer flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md border hover:bg-muted/50"
                 >
-                  <Camera className="h-5 w-5 text-muted-foreground" />
+                  <Camera className="h-5 w-12 text-muted-foreground" />
                   <span className="text-sm">Use Camera</span>
                 </Label>
                 <Label
                   htmlFor="device-images"
                   className="cursor-pointer flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md border hover:bg-muted/50"
                 >
-                  <Image className="h-5 w-5 text-muted-foreground" />
+                  <Image className="h-5 w-12 text-muted-foreground" />
                   <span className="text-sm">Upload Files</span>
                 </Label>
               </div>
-              <span className="text-[11px] text-muted-foreground text-center">
-                You can add more after each capture/upload.
-              </span>
             </div>
           ) : (
             <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg h-32 flex flex-col items-center justify-center hover:border-muted-foreground/50 transition-colors">

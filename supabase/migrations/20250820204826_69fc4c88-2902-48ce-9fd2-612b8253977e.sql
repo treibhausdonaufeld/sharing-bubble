@@ -25,15 +25,15 @@ USING (
 
 -- Add an additional policy for users involved in active transactions/requests
 -- This allows viewing location details when there's an active item request
-CREATE POLICY "Users can view locations for active requests" 
-ON public.user_locations 
-FOR SELECT 
-USING (
-  EXISTS (
-    SELECT 1 FROM public.item_requests ir
-    JOIN public.items i ON ir.item_id = i.id
-    WHERE i.location_id = user_locations.id 
-    AND (ir.requester_id = auth.uid() OR ir.owner_id = auth.uid())
-    AND ir.status IN ('pending', 'accepted', 'counter_offered')
-  )
-);
+-- CREATE POLICY "Users can view locations for active requests" 
+-- ON public.user_locations 
+-- FOR SELECT 
+-- USING (
+--   EXISTS (
+--     SELECT 1 FROM public.item_requests ir
+--     JOIN public.items i ON ir.item_id = i.id
+--     WHERE i.location_id = user_locations.id 
+--     AND (ir.requester_id = auth.uid() OR ir.owner_id = auth.uid())
+--     AND ir.status IN ('pending', 'accepted', 'counter_offered')
+--   )
+-- );

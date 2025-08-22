@@ -30,7 +30,8 @@ type ProcessingState = 'idle' | 'uploading' | 'processing' | 'completed' | 'erro
 export const ImageUploadStep = ({ onComplete, onBack }: ImageUploadStepProps) => {
   const { toast } = useToast();
   const { language } = useLanguage();
-  const { createProcessingJob, subscribeToProcessingUpdates } = useImageProcessing();
+  // Only need job creation now
+  const { createProcessingJob } = useImageProcessing();
   const { user } = useAuth(); // Use the auth context instead
   
   const [images, setImages] = useState<{ url: string; file: File }[]>([]);
@@ -41,6 +42,9 @@ export const ImageUploadStep = ({ onComplete, onBack }: ImageUploadStepProps) =>
     description?: string;
   }>({});
   const [tempItemId, setTempItemId] = useState<string | null>(null);
+  // Track the created job and uploaded images for retries
+  const [jobId, setJobId] = useState<string | null>(null);
+  const [uploadedImagesState, setUploadedImagesState] = useState<{ url: string; file: File }[]>([]);
 
   const handleSkipImages = () => {
     onComplete({ images: [], skipImages: true });
@@ -89,6 +93,31 @@ export const ImageUploadStep = ({ onComplete, onBack }: ImageUploadStepProps) =>
     return uploadedImages;
   }, [images]);
 
+  const invokeAI = useCallback(
+    async (jobIdArg: string, primaryImageUrl: string) => {
+      const { data, error } = await supabase.functions.invoke('generate-item-content', {
+        body: {
+          jobId: jobIdArg,
+          primaryImageUrl,
+          userLanguage: language,
+        },
+      });
+
+      if (error) {
+        throw error;
+      }
+      if (!data?.success) {
+        throw new Error(data?.details || 'AI function did not return success');
+      }
+
+      return {
+        title: data.aiGeneratedTitle as string,
+        description: data.aiGeneratedDescription as string,
+      };
+    },
+    [language]
+  );
+
   const handleProceedWithAI = async () => {
     if (images.length === 0) {
       toast({
@@ -102,16 +131,8 @@ export const ImageUploadStep = ({ onComplete, onBack }: ImageUploadStepProps) =>
     try {
       setProcessingState('uploading');
       setProgress(10);
-
-      // Create a temporary item record for processing
-      console.log('Current user from auth context:', user);
-      console.log('User ID for temp item:', user?.id);
       
-      if (!user?.id) {
-        throw new Error('User not authenticated - no user ID available');
-      }
-
-      // Generate an ID client-side to avoid needing RETURNING (which hits SELECT RLS)
+      // Generate client-side item ID
       const tempId = (typeof crypto !== 'undefined' && 'randomUUID' in crypto)
         ? crypto.randomUUID()
         : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -120,7 +141,7 @@ export const ImageUploadStep = ({ onComplete, onBack }: ImageUploadStepProps) =>
         .from('items')
         .insert({
           id: tempId,
-          title: 'Temporary Item for Processing',
+          title: tempId,
           user_id: user.id,
           description: 'empty',
           category: 'other',
@@ -131,69 +152,40 @@ export const ImageUploadStep = ({ onComplete, onBack }: ImageUploadStepProps) =>
 
       if (itemError) throw itemError;
 
-      // Create ownership record for the temporary item
-      const { error: ownerError } = await supabase
-        .from('item_owners')
-        .insert({
-          item_id: tempId,
-          user_id: user.id,
-          role: 'owner'
-        });
-
-      if (ownerError) throw ownerError;
-      
       setTempItemId(tempId);
       setProgress(30);
 
       // Upload images to storage
       const uploadedImages = await uploadImagesToStorage(tempId);
+      setUploadedImagesState(uploadedImages);
       setProgress(50);
 
-      // Create processing job and start AI processing
+      // Create processing job (stores images + context in DB)
       setProcessingState('processing');
       const job = await createProcessingJob(tempId, uploadedImages, language);
-      
-      if (!job) throw new Error('Failed to create processing job');
+      if (!job?.id) throw new Error('Failed to create processing job');
+      setJobId(job.id);
 
-      // Subscribe to processing updates
-      const unsubscribe = subscribeToProcessingUpdates(tempId, (updatedJob) => {
-        if (updatedJob.status === 'processing') {
-          setProgress(70);
-        } else if (updatedJob.status === 'completed') {
-          setProcessingState('completed');
-          setProgress(100);
-          
-          // Set AI generated data
-          const aiData = {
-            title: updatedJob.ai_generated_title || '',
-            description: updatedJob.ai_generated_description || ''
-          };
-          setAiGeneratedData(aiData);
+      // Call AI function directly and await result
+      setProgress(70);
+      const aiData = await invokeAI(job.id, uploadedImages[0].url);
 
-          toast({
-            title: "Processing Complete!",
-            description: "AI has analyzed your images and generated suggestions.",
-          });
+      setProcessingState('completed');
+      setProgress(100);
 
-        // Auto-proceed after showing results
-        setTimeout(() => {
-          onComplete({ 
-            images: uploadedImages, 
-            aiGeneratedData: aiData,
-            tempItemId: tempId
-          });
-          unsubscribe();
-        }, 2000);
-        } else if (updatedJob.status === 'failed') {
-          setProcessingState('error');
-          toast({
-            title: "Processing Failed",
-            description: updatedJob.error_message || "AI processing failed. Please try again.",
-            variant: "destructive",
-          });
-          unsubscribe();
-        }
+      toast({
+        title: "Processing Complete!",
+        description: "AI has analyzed your images and generated suggestions.",
       });
+
+      // Auto-proceed after showing results
+      setTimeout(() => {
+        onComplete({ 
+          images: uploadedImages, 
+          aiGeneratedData: aiData,
+          tempItemId: tempId
+        });
+      }, 800);
 
     } catch (error) {
       console.error('Error in AI processing:', error);
@@ -201,6 +193,49 @@ export const ImageUploadStep = ({ onComplete, onBack }: ImageUploadStepProps) =>
       toast({
         title: "Processing Error",
         description: "Failed to process images. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleRetryAI = async () => {
+    if (!tempItemId || !jobId || uploadedImagesState.length === 0) {
+      toast({
+        title: "Retry Unavailable",
+        description: "No previous processing job found to retry.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setProcessingState('processing');
+      setProgress(60);
+
+      const aiData = await invokeAI(jobId, uploadedImagesState[0].url);
+
+      setProcessingState('completed');
+      setProgress(100);
+
+      toast({
+        title: "Processing Complete!",
+        description: "AI has analyzed your images and generated suggestions.",
+      });
+
+      setTimeout(() => {
+        onComplete({ 
+          images: uploadedImagesState, 
+          aiGeneratedData: aiData,
+          tempItemId
+        });
+      }, 800);
+
+    } catch (error) {
+      console.error('Retry AI error:', error);
+      setProcessingState('error');
+      toast({
+        title: "Retry Failed",
+        description: "Could not restart AI processing.",
         variant: "destructive",
       });
     }
@@ -328,8 +363,8 @@ export const ImageUploadStep = ({ onComplete, onBack }: ImageUploadStepProps) =>
             {processingState === 'error' && (
               <div className="flex gap-2">
                 <Button 
-                  onClick={handleProceedWithAI}
-                  disabled={images.length === 0}
+                  onClick={handleRetryAI}
+                  disabled={!tempItemId}
                   className="flex-1 gap-2"
                 >
                   <Sparkles className="h-4 w-4" />
