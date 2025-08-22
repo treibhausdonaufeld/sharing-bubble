@@ -19,6 +19,10 @@ interface ImageUploadStepProps {
     aiGeneratedData?: {
       title?: string;
       description?: string;
+  category?: string;
+  condition?: string;
+  listing_type?: string;
+  sale_price?: number | null;
     };
     tempItemId?: string;
   }) => void;
@@ -40,6 +44,10 @@ export const ImageUploadStep = ({ onComplete, onBack }: ImageUploadStepProps) =>
   const [aiGeneratedData, setAiGeneratedData] = useState<{
     title?: string;
     description?: string;
+  category?: string;
+  condition?: string;
+  listing_type?: string;
+  sale_price?: number | null;
   }>({});
   const [tempItemId, setTempItemId] = useState<string | null>(null);
   // Track the created job and uploaded images for retries
@@ -64,32 +72,44 @@ export const ImageUploadStep = ({ onComplete, onBack }: ImageUploadStepProps) =>
 
   const uploadImagesToStorage = useCallback(async (itemId: string) => {
     const uploadedImages: { url: string; file: File }[] = [];
-    
-    for (const image of images) {
+
+    for (let i = 0; i < images.length; i++) {
+      const image = images[i];
       try {
         const fileExt = image.file.name.split('.').pop();
-        const fileName = `${itemId}/${Date.now()}.${fileExt}`;
-        
-        const { data, error } = await supabase.storage
+        const fileName = `${itemId}/${Date.now()}-${i}.${fileExt}`;
+
+        const { error: uploadErr } = await supabase.storage
           .from('item-images')
           .upload(fileName, image.file);
 
-        if (error) throw error;
+        if (uploadErr) throw uploadErr;
 
         const { data: publicUrl } = supabase.storage
           .from('item-images')
           .getPublicUrl(fileName);
 
-        uploadedImages.push({
-          url: publicUrl.publicUrl,
-          file: image.file
-        });
+        const imageUrl = publicUrl.publicUrl;
+
+        // Insert DB record for this image
+        const { error: insertErr } = await supabase
+          .from('item_images')
+          .insert({
+            item_id: itemId,
+            image_url: imageUrl,
+            is_primary: i === 0,
+            display_order: i,
+          });
+
+        if (insertErr) throw insertErr;
+
+        uploadedImages.push({ url: imageUrl, file: image.file });
       } catch (error) {
-        console.error('Error uploading image:', error);
+        console.error('Error uploading/saving image:', error);
         throw error;
       }
     }
-    
+
     return uploadedImages;
   }, [images]);
 
@@ -113,6 +133,10 @@ export const ImageUploadStep = ({ onComplete, onBack }: ImageUploadStepProps) =>
       return {
         title: data.aiGeneratedTitle as string,
         description: data.aiGeneratedDescription as string,
+        category: data.aiGeneratedCategory as string | undefined,
+        condition: data.aiGeneratedCondition as string | undefined,
+        listing_type: data.aiGeneratedListingType as string | undefined,
+        sale_price: (data.aiGeneratedSalePrice ?? null) as number | null,
       };
     },
     [language]
@@ -152,6 +176,12 @@ export const ImageUploadStep = ({ onComplete, onBack }: ImageUploadStepProps) =>
 
       if (itemError) throw itemError;
 
+      // Ensure ownership is recorded for RLS on item_images
+      const { error: ownerErr } = await supabase
+        .from('item_owners')
+        .insert({ item_id: tempId, user_id: user.id, role: 'owner' });
+      if (ownerErr) throw ownerErr;
+
       setTempItemId(tempId);
       setProgress(30);
 
@@ -166,9 +196,10 @@ export const ImageUploadStep = ({ onComplete, onBack }: ImageUploadStepProps) =>
       if (!job?.id) throw new Error('Failed to create processing job');
       setJobId(job.id);
 
-      // Call AI function directly and await result
+  // Call AI function directly and await result
       setProgress(70);
       const aiData = await invokeAI(job.id, uploadedImages[0].url);
+  setAiGeneratedData(aiData);
 
       setProcessingState('completed');
       setProgress(100);
@@ -314,6 +345,30 @@ export const ImageUploadStep = ({ onComplete, onBack }: ImageUploadStepProps) =>
                   <p className="text-xs text-muted-foreground">Suggested Description:</p>
                   <p className="text-sm">{aiGeneratedData.description}</p>
                 </div>
+                    {aiGeneratedData.category && (
+                      <div>
+                        <p className="text-xs text-muted-foreground">Suggested Category:</p>
+                        <p className="text-sm">{aiGeneratedData.category}</p>
+                      </div>
+                    )}
+                    {aiGeneratedData.condition && (
+                      <div>
+                        <p className="text-xs text-muted-foreground">Suggested Condition:</p>
+                        <p className="text-sm">{aiGeneratedData.condition}</p>
+                      </div>
+                    )}
+                    {aiGeneratedData.listing_type && (
+                      <div>
+                        <p className="text-xs text-muted-foreground">Listing Type:</p>
+                        <p className="text-sm">{aiGeneratedData.listing_type}</p>
+                      </div>
+                    )}
+                    {typeof aiGeneratedData.sale_price === 'number' && (
+                      <div>
+                        <p className="text-xs text-muted-foreground">Suggested Sale Price:</p>
+                        <p className="text-sm">€ {aiGeneratedData.sale_price?.toFixed(2)}</p>
+                      </div>
+                    )}
               </div>
             </div>
           )}

@@ -1,14 +1,14 @@
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles, Edit3, Save } from 'lucide-react';
-import { Database } from '@/integrations/supabase/types';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Database } from '@/integrations/supabase/types';
+import { Edit3, Save, Sparkles } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface ItemDetailsStepProps {
   onComplete: (formData: ItemFormData) => void;
@@ -17,6 +17,10 @@ interface ItemDetailsStepProps {
   aiGeneratedData?: {
     title?: string;
     description?: string;
+  category?: string;
+  condition?: string;
+  listing_type?: string;
+  sale_price?: number | null;
   };
   isLoading?: boolean;
 }
@@ -62,11 +66,17 @@ export const ItemDetailsStep = ({
 
   // Pre-populate with AI-generated data
   useEffect(() => {
-    if (aiGeneratedData?.title || aiGeneratedData?.description) {
+    if (aiGeneratedData && (aiGeneratedData.title || aiGeneratedData.description)) {
       setFormData(prev => ({
         ...prev,
         title: aiGeneratedData.title || prev.title,
-        description: aiGeneratedData.description || prev.description
+        description: aiGeneratedData.description || prev.description,
+        category: (aiGeneratedData.category as any) || prev.category,
+        condition: (aiGeneratedData.condition as any) || prev.condition,
+        listing_type: (aiGeneratedData.listing_type as any) || prev.listing_type,
+        sale_price: typeof aiGeneratedData.sale_price === 'number'
+          ? aiGeneratedData.sale_price.toFixed(2)
+          : prev.sale_price,
       }));
     }
   }, [aiGeneratedData]);

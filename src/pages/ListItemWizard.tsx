@@ -1,17 +1,17 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
+import { ImageUploadStep } from '@/components/items/ImageUploadStep';
+import { ItemDetailsStep, ItemFormData } from '@/components/items/ItemDetailsStep';
 import { Header } from '@/components/layout/Header';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { useImageProcessing } from '@/hooks/useImageProcessing';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { ImageUploadStep } from '@/components/items/ImageUploadStep';
-import { ItemDetailsStep, ItemFormData } from '@/components/items/ItemDetailsStep';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { useImageProcessing } from '@/hooks/useImageProcessing';
+import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
+import { ArrowLeft } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 type WizardStep = 'images' | 'details';
 
@@ -20,6 +20,10 @@ interface WizardData {
   aiGeneratedData?: {
     title?: string;
     description?: string;
+  category?: string;
+  condition?: string;
+  listing_type?: string;
+  sale_price?: number | null;
   };
   skipAI?: boolean;
   skipImages?: boolean;

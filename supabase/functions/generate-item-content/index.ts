@@ -2,6 +2,19 @@ import { encode as base64Encode } from "https://deno.land/std@0.168.0/encoding/b
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 
+// Types for AI content and enums
+type AllowedCondition = "new" | "used" | "broken";
+type AllowedListingType = "sell" | "rent" | "both";
+
+interface AIContent {
+  title: string;
+  description: string;
+  category?: string;
+  condition?: AllowedCondition | string;
+  listing_type?: AllowedListingType | string;
+  sale_price?: number;
+}
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -128,15 +141,14 @@ serve(async (req) => {
     }
 
     // Use Deno std base64 encoder to avoid stack overflow on large images
-    const imageBuffer = await imageResponse.arrayBuffer();
-    const uint8 = new Uint8Array(imageBuffer);
-    const base64Image = base64Encode(uint8); // replaced btoa(String.fromCharCode(...))
+  const imageBuffer = await imageResponse.arrayBuffer();
+  const base64Image = base64Encode(imageBuffer); // encode ArrayBuffer directly
 
     const mimeType = imageResponse.headers.get("content-type") || "image/jpeg";
 
     // Generate AI content using Google Gemini
     console.log("Calling Google Gemini API...");
-    const aiContent = await generateAIContent(
+  const aiContent = await generateAIContent(
       base64Image,
       mimeType,
       userLanguage,
@@ -145,6 +157,76 @@ serve(async (req) => {
 
     console.log(`Generated title: ${aiContent.title}`);
     console.log(`Generated description: ${aiContent.description}`);
+
+    // Fetch allowed categories dynamically from DB
+    const { data: catRows, error: catErr } = await supabase
+      .rpc("get_item_category_values");
+    if (catErr) {
+      console.warn("Failed to fetch categories from DB, falling back to 'other' default only:", catErr);
+    }
+    const allowedCategories = Array.isArray(catRows) && catRows.length > 0
+      ? (catRows as string[]).map((c) => c.toLowerCase())
+      : (['other'] as string[]);
+
+    const allowedConditions: ReadonlyArray<AllowedCondition> = [
+      "new",
+      "used",
+      "broken",
+    ] as const;
+    const allowedListingTypes: ReadonlyArray<AllowedListingType> = [
+      "sell",
+      "rent",
+      "both",
+    ] as const;
+
+    const isAllowedCategory = (v: string): boolean =>
+      (allowedCategories as ReadonlyArray<string>).includes(v);
+    const isAllowedCondition = (v: string): v is AllowedCondition =>
+      (allowedConditions as ReadonlyArray<string>).includes(v);
+    const isAllowedListingType = (v: string): v is AllowedListingType =>
+      (allowedListingTypes as ReadonlyArray<string>).includes(v);
+
+  const categoryStr = (aiContent.category || "other").toLowerCase();
+  const category: string = isAllowedCategory(categoryStr)
+      ? categoryStr
+      : "other";
+
+  const conditionStr = (aiContent.condition || "used").toLowerCase();
+    const condition: AllowedCondition = isAllowedCondition(conditionStr)
+      ? conditionStr
+      : "used";
+
+  const listingTypeStr = (aiContent.listing_type || "sell").toLowerCase();
+    let listingType: AllowedListingType = isAllowedListingType(listingTypeStr)
+      ? listingTypeStr
+      : "sell";
+    // Business rule: rooms cannot be sold
+    if (category === "rooms" && listingType === "sell") listingType = "rent";
+
+    let sale_price: number | null = null;
+    if (typeof aiContent.sale_price === "number") {
+      const p = Math.max(0, Number(aiContent.sale_price));
+      sale_price = Number.isFinite(p) ? Math.round(p * 100) / 100 : null;
+    }
+
+    // Persist suggestions onto the item row if we know the item id
+    if (job.item_id) {
+      const { error: itemUpdateErr } = await supabase
+        .from("items")
+        .update({
+          title: aiContent.title,
+          description: aiContent.description,
+          category,
+          condition,
+          listing_type: listingType,
+          sale_price,
+        })
+        .eq("id", job.item_id);
+
+      if (itemUpdateErr) {
+        console.warn("Failed to update item with AI suggestions:", itemUpdateErr);
+      }
+    }
 
     // Update the job with AI-generated content
     await supabase
@@ -165,6 +247,10 @@ serve(async (req) => {
         jobId,
         aiGeneratedTitle: aiContent.title,
         aiGeneratedDescription: aiContent.description,
+        aiGeneratedCategory: category,
+        aiGeneratedCondition: condition,
+        aiGeneratedListingType: listingType,
+        aiGeneratedSalePrice: sale_price,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
@@ -216,7 +302,7 @@ async function generateAIContent(
   mimeType: string,
   userLanguage: string,
   apiKey: string,
-) {
+): Promise<AIContent> {
   const languageInstructions = getLanguageInstructions(userLanguage);
 
   const prompt = `${languageInstructions}
@@ -235,7 +321,11 @@ Be descriptive but honest. Focus on what you can actually see in the image.
 Format your response as JSON:
 {
   "title": "your generated title",
-  "description": "your generated description"
+  "description": "your generated description",
+  "category": "one of: electronics, tools, furniture, books, sports, clothing, kitchen, garden, toys, vehicles, rooms, other",
+  "condition": "one of: new, used, broken",
+  "listing_type": "sell (default), rent, or both. Use rent for rooms.",
+  "sale_price": number // suggested sale price in EUR, non-negative
 }`;
 
   const response = await fetch(
@@ -298,8 +388,27 @@ Format your response as JSON:
     }
 
     return {
-      title: parsedContent.title.substring(0, 60), // Ensure max length
-      description: parsedContent.description,
+      title: String(parsedContent.title).substring(0, 60), // Ensure max length
+      description: String(parsedContent.description),
+      category: typeof parsedContent.category === "string"
+        ? parsedContent.category.toLowerCase()
+        : undefined,
+      condition: typeof parsedContent.condition === "string"
+        ? parsedContent.condition.toLowerCase()
+        : undefined,
+      listing_type: typeof parsedContent.listing_type === "string"
+        ? parsedContent.listing_type.toLowerCase()
+        : undefined,
+      sale_price: typeof parsedContent.sale_price === "number"
+        ? parsedContent.sale_price
+        : undefined,
+    } as {
+      title: string;
+      description: string;
+      category?: string;
+      condition?: string;
+      listing_type?: string;
+      sale_price?: number;
     };
   } catch (parseError) {
     console.error("Error parsing Gemini response:", parseError);
@@ -313,7 +422,10 @@ Format your response as JSON:
     const description = lines.slice(1).join(" ") ||
       "A quality item in good condition.";
 
-    return { title, description };
+    return { title, description } as {
+      title: string;
+      description: string;
+    };
   }
 }
 
