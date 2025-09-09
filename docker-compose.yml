@@ -24,6 +24,8 @@ services:
     image: node:latest
     volumes:
       - .:/app
+    environment:
+      PGSSLMODE: disable
     command:
       - sh
       - -lc
@@ -31,7 +33,7 @@ services:
         cd && \
         npm i supabase@latest && \
         cd /app && \
-        /root/node_modules/.bin/supabase db push --db-url postgres://postgres.${POOLER_TENANT_ID}:${POSTGRES_PASSWORD}@supavisor:5432/${POSTGRES_DB}
+        /root/node_modules/.bin/supabase db push --yes --db-url postgres://postgres.${POOLER_TENANT_ID}:${POSTGRES_PASSWORD}@supavisor:5432/${POSTGRES_DB}
     depends_on:
       - kong
       - supavisor
