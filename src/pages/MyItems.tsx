@@ -1,20 +1,32 @@
 import { Header } from "@/components/layout/Header";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { useMyItems, useUpdateItemStatus } from "@/hooks/useMyItems";
+import { useDeleteItem, useMyItems, useUpdateItemStatus } from "@/hooks/useMyItems";
 import { cn } from "@/lib/utils";
 import {
   Edit3,
   Euro,
   Eye,
   MoreHorizontal,
-  Plus
+  Plus,
+  Trash2
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -25,6 +37,11 @@ const MyItems = () => {
   const { toast } = useToast();
   const { data: items = [], isLoading } = useMyItems();
   const updateStatusMutation = useUpdateItemStatus();
+  const deleteItemMutation = useDeleteItem();
+
+  const handleDeleteItem = (itemId: string) => {
+    deleteItemMutation.mutate(itemId);
+  };
 
   const handleStatusChange = async (
     itemId: string, 
@@ -114,7 +131,10 @@ const MyItems = () => {
               return (
                 <Card key={item.id} className="overflow-hidden">
                   {/* Image */}
-                  <div className="aspect-[4/3] overflow-hidden">
+                  <div
+                    className="aspect-[4/3] overflow-hidden cursor-pointer"
+                    onClick={() => navigate(`/edit-item/${item.id}`)}
+                  >
                     {primaryImage ? (
                       <img
                         src={primaryImage.image_url}
@@ -133,7 +153,10 @@ const MyItems = () => {
 
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
-                      <h3 className="font-semibold text-foreground line-clamp-1">
+                      <h3
+                        className="font-semibold text-foreground line-clamp-1 cursor-pointer hover:underline"
+                        onClick={() => navigate(`/edit-item/${item.id}`)}
+                      >
                         {item.title}
                       </h3>
                       <DropdownMenu>
@@ -151,6 +174,27 @@ const MyItems = () => {
                             <Edit3 className="h-4 w-4 mr-2" />
                             Edit
                           </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive">
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Delete
+                              </DropdownMenuItem>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  This action cannot be undone. This will permanently delete your item and remove its data from our servers.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDeleteItem(item.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>

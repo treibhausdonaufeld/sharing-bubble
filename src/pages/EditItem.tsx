@@ -13,7 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
 import { ArrowLeft } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 
 const EditItem = () => {
@@ -21,8 +21,7 @@ const EditItem = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useLanguage();
-  const [searchParams] = useSearchParams();
-  const editItemId = searchParams.get('edit');
+  const { itemId: editItemId } = useParams<{ itemId: string }>();
   const [loading, setLoading] = useState(false);
   const [loadingItem, setLoadingItem] = useState(!!editItemId);
   const [images, setImages] = useState<{ url: string; file: File }[]>([]);
@@ -54,6 +53,25 @@ const EditItem = () => {
       
       setLoadingItem(true);
       try {
+        // First, verify if the user is an owner of the item
+        const { data: ownerCheck, error: ownerError } = await supabase
+          .from('item_owners')
+          .select('item_id')
+          .eq('item_id', editItemId)
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (ownerError) throw ownerError;
+
+        if (!ownerCheck) {
+          toast({
+            title: "Unauthorized",
+            description: "You don't have permission to edit this item.",
+            variant: "destructive",
+          });
+          navigate('/');
+          return;
+        }
         const { data: item, error } = await supabase
           .from('items')
           .select(`
@@ -66,7 +84,6 @@ const EditItem = () => {
             )
           `)
           .eq('id', editItemId)
-          .eq('user_id', user.id)
           .maybeSingle();
 
         if (error) throw error;
@@ -74,7 +91,7 @@ const EditItem = () => {
         if (!item) {
           toast({
             title: "Error",
-            description: "Item not found or you don't have permission to edit it.",
+            description: "Item not found.",
             variant: "destructive",
           });
           navigate('/');

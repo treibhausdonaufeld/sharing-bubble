@@ -1,16 +1,27 @@
 import { ItemOwnersManager } from "@/components/items/ItemOwnersManager";
 import { RequestDialog } from "@/components/items/RequestDialog";
 import { Header } from "@/components/layout/Header";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useItem } from "@/hooks/useItem";
 import { useItemOwners } from "@/hooks/useItemOwners";
+import { useDeleteItem } from "@/hooks/useMyItems";
 import { cn } from "@/lib/utils";
 import {
   ArrowLeft,
@@ -31,11 +42,11 @@ const ItemDetail = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { t } = useLanguage();
-  const { toast } = useToast();
   const { data: owners = [] } = useItemOwners(itemId);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [requestDialogOpen, setRequestDialogOpen] = useState(false);
   const [requestType, setRequestType] = useState<"buy" | "rent">("buy");
+  const deleteItemMutation = useDeleteItem();
 
   const { data: item, isLoading, error } = useItem(itemId);
 
@@ -63,12 +74,12 @@ const ItemDetail = () => {
   };
 
   const handleDeleteItem = async () => {
-    if (!confirm("Are you sure you want to delete this item?")) return;
-    
-    // TODO: Implement delete functionality
-    toast({
-      title: "Delete functionality not implemented yet",
-      description: "This feature will be available soon.",
+    if (!itemId) return;
+    deleteItemMutation.mutate(itemId, {
+      onSuccess: () => {
+        // After successful deletion, navigate away
+        navigate('/my-items');
+      }
     });
   };
 
@@ -309,12 +320,28 @@ const ItemDetail = () => {
                       <Edit3 className="mr-2 h-4 w-4" />
                       {t('Edit')}
                     </Button>
-                    <Button 
-                      onClick={handleDeleteItem} 
-                      variant="destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button 
+                          variant="destructive"
+                          disabled={deleteItemMutation.isPending}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete this item and all associated data.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleDeleteItem} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                   
                   {/* Item Owners Manager */}
