@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, ReactNode, useContext, useState } from 'react';
 
 export type Language = 'en' | 'de';
 
@@ -45,14 +45,14 @@ const translations = {
     'item.location': 'Location',
     
     // List Item
-    'listItem.title': 'Share an Item',
-    'listItem.itemName': 'Item Name',
-    'listItem.description': 'Description',
-    'listItem.descriptionPlaceholder': 'Describe your item, its condition, and any details...',
-    'listItem.selectCategory': 'Select Category',
-    'listItem.selectCondition': 'Select Condition',
-    'listItem.uploadImages': 'Upload Images',
-    'listItem.shareItem': 'Share Item',
+    'editItem.title': 'Share an Item',
+    'editItem.itemName': 'Item Name',
+    'editItem.description': 'Description',
+    'editItem.descriptionPlaceholder': 'Describe your item, its condition, and any details...',
+    'editItem.selectCategory': 'Select Category',
+    'editItem.selectCondition': 'Select Condition',
+    'editItem.uploadImages': 'Upload Images',
+    'editItem.shareItem': 'Share Item',
     
     // Categories
     'category.all': 'All Categories',
@@ -72,10 +72,7 @@ const translations = {
     // Conditions
     'condition.new': 'New',
     'condition.used': 'Used',
-    'condition.like_new': 'Like New',
-    'condition.good': 'Good',
-    'condition.fair': 'Fair',
-    'condition.poor': 'Poor',
+    'condition.broken': 'Broken',
     
     // Messages
     'messages.title': 'Messages',
@@ -159,14 +156,14 @@ const translations = {
     'item.location': 'Ort',
     
     // List Item
-    'listItem.title': 'Artikel teilen',
-    'listItem.itemName': 'Artikelname',
-    'listItem.description': 'Beschreibung',
-    'listItem.descriptionPlaceholder': 'Beschreibe deinen Artikel, seinen Zustand und weitere Details...',
-    'listItem.selectCategory': 'Kategorie auswählen',
-    'listItem.selectCondition': 'Zustand auswählen',
-    'listItem.uploadImages': 'Bilder hochladen',
-    'listItem.shareItem': 'Artikel teilen',
+    'editItem.title': 'Artikel teilen',
+    'editItem.itemName': 'Artikelname',
+    'editItem.description': 'Beschreibung',
+    'editItem.descriptionPlaceholder': 'Beschreibe deinen Artikel, seinen Zustand und weitere Details...',
+    'editItem.selectCategory': 'Kategorie auswählen',
+    'editItem.selectCondition': 'Zustand auswählen',
+    'editItem.uploadImages': 'Bilder hochladen',
+    'editItem.shareItem': 'Artikel teilen',
     
     // Categories
     'category.all': 'Alle Kategorien',
@@ -186,10 +183,7 @@ const translations = {
     // Conditions
     'condition.new': 'Neu',
     'condition.used': 'Gebraucht',
-    'condition.like_new': 'Wie neu',
-    'condition.good': 'Gut',
-    'condition.fair': 'Angemessen',
-    'condition.poor': 'Schlecht',
+    'condition.broken': 'Kaputt',
     
     // Messages
     'messages.title': 'Nachrichten',

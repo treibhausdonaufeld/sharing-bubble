@@ -30,7 +30,7 @@ export const ImageUploadStep = ({ onBack }: ImageUploadStepProps) => {
   const [progress, setProgress] = useState(0);
 
   const handleSkipImages = () => {
-    navigate('/list-item');
+    createDraftAndNavigate(false);
   };
 
   const uploadImagesToStorage = useCallback(async (itemId: string, imagesToUpload: { url: string; file: File }[]) => {
@@ -115,11 +115,6 @@ export const ImageUploadStep = ({ onBack }: ImageUploadStepProps) => {
       return;
     }
 
-    if (images.length === 0 && !withAI) {
-      navigate('/list-item');
-      return;
-    }
-
     setProcessingState('uploading');
     setProgress(10);
 
@@ -151,7 +146,7 @@ export const ImageUploadStep = ({ onBack }: ImageUploadStepProps) => {
       const uploadedImages = await uploadImagesToStorage(newItemId, images);
       setProgress(50);
 
-      if (withAI) {
+      if (withAI && uploadedImages.length > 0) {
         setProcessingState('processing');
         setProgress(70);
         
@@ -174,7 +169,7 @@ export const ImageUploadStep = ({ onBack }: ImageUploadStepProps) => {
         title: "Draft Created",
         description: "Redirecting to edit your item details...",
       });
-      navigate(`/list-item?edit=${newItemId}`);
+      navigate(`/edit-item/${newItemId}`);
 
     } catch (error) {
       console.error('Error creating draft item:', error);

@@ -115,7 +115,7 @@ export const ItemDetailsStep = ({
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Title */}
             <div className="space-y-2">
-              <Label htmlFor="title">{t('listItem.itemName')} *</Label>
+              <Label htmlFor="title">{t('editItem.itemName')} *</Label>
               <Input
                 id="title"
                 value={formData.title}
@@ -131,12 +131,12 @@ export const ItemDetailsStep = ({
 
             {/* Description */}
             <div className="space-y-2">
-              <Label htmlFor="description">{t('listItem.description')}</Label>
+              <Label htmlFor="description">{t('editItem.description')}</Label>
               <Textarea
                 id="description"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder={t('listItem.descriptionPlaceholder')}
+                placeholder={t('editItem.descriptionPlaceholder')}
                 rows={4}
                 className={hasAiData && aiGeneratedData?.description ? 'border-accent/50' : ''}
               />
@@ -148,7 +148,7 @@ export const ItemDetailsStep = ({
             {/* Category and Condition */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>{t('listItem.selectCategory')} *</Label>
+                <Label>{t('editItem.selectCategory')} *</Label>
                 <Select 
                   value={formData.category} 
                   onValueChange={(value) => setFormData({
@@ -157,7 +157,7 @@ export const ItemDetailsStep = ({
                   })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder={t('listItem.selectCategory')} />
+                    <SelectValue placeholder={t('editItem.selectCategory')} />
                   </SelectTrigger>
                   <SelectContent>
                     {categories.map((category) => (
@@ -170,7 +170,7 @@ export const ItemDetailsStep = ({
               </div>
 
               <div className="space-y-2">
-                <Label>{t('listItem.selectCondition')} *</Label>
+                <Label>{t('editItem.selectCondition')} *</Label>
                 <Select 
                   value={formData.condition} 
                   onValueChange={(value) => setFormData({
@@ -179,7 +179,7 @@ export const ItemDetailsStep = ({
                   })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder={t('listItem.selectCondition')} />
+                    <SelectValue placeholder={t('editItem.selectCondition')} />
                   </SelectTrigger>
                   <SelectContent>
                     {conditions.map((condition) => (
