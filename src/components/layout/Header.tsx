@@ -1,15 +1,15 @@
-import { useState } from "react";
-import { Search, Plus, MessageCircle, User, Moon, Sun, MapPin, LogOut, Languages } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useTheme } from "@/providers/theme-provider";
-import { useAuth } from "@/hooks/useAuth";
-import { useNavigate } from "react-router-dom";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/hooks/useAuth";
 import { useUnreadCount } from "@/hooks/useUnreadCount";
 import { cn } from "@/lib/utils";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useTheme } from "@/providers/theme-provider";
+import { Languages, LogOut, MessageCircle, Moon, Plus, Search, Sun, User } from "lucide-react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export const Header = () => {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -128,7 +128,7 @@ export const Header = () => {
                   variant="community" 
                   size="sm"
                   className="gap-2"
-                  onClick={() => navigate("/list-item")}
+                  onClick={() => navigate("/create-item")}
                 >
                   <Plus className="h-4 w-4" />
                   <span className="hidden sm:inline">{t('header.shareItem')}</span>

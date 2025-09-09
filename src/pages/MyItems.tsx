@@ -1,24 +1,22 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { 
-  Edit3, 
-  Eye, 
-  Plus, 
-  Calendar, 
-  Euro,
-  MoreHorizontal
-} from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useMyItems, useUpdateItemStatus } from "@/hooks/useMyItems";
-import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/hooks/useAuth";
+import { useMyItems, useUpdateItemStatus } from "@/hooks/useMyItems";
+import { cn } from "@/lib/utils";
+import {
+  Edit3,
+  Euro,
+  Eye,
+  MoreHorizontal,
+  Plus
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const MyItems = () => {
   const { user, loading } = useAuth();
@@ -82,7 +80,7 @@ const MyItems = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-foreground">{t('myItems.title')}</h1>
-          <Button onClick={() => navigate("/list-item")} className="gap-2">
+          <Button onClick={() => navigate("/create-item")} className="gap-2">
             <Plus className="h-4 w-4" />
             {t('myItems.createItem')}
           </Button>
@@ -102,7 +100,7 @@ const MyItems = () => {
               <p className="text-muted-foreground mb-6">
                 {t('myItems.createFirst')}
               </p>
-              <Button onClick={() => navigate("/list-item")} className="gap-2">
+              <Button onClick={() => navigate("/create-item")} className="gap-2">
                 <Plus className="h-4 w-4" />
                 {t('myItems.createItem')}
               </Button>
@@ -149,7 +147,7 @@ const MyItems = () => {
                             <Eye className="h-4 w-4 mr-2" />
                             View
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => navigate(`/list-item?edit=${item.id}`)}>
+                          <DropdownMenuItem onClick={() => navigate(`/edit-item/${item.id}`)}>
                             <Edit3 className="h-4 w-4 mr-2" />
                             Edit
                           </DropdownMenuItem>

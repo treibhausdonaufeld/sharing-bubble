@@ -7,10 +7,10 @@ import { ThemeProvider } from "@/providers/theme-provider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Auth from "./pages/Auth";
+import EditItem from "./pages/EditItem";
 import Index from "./pages/Index";
 import ItemDetail from "./pages/ItemDetail";
-import ListItem from "./pages/ListItem";
-import ListItemWizard from "./pages/ListItemWizard";
+import CreateItem from "./pages/CreateItem";
 import Messages from "./pages/Messages";
 import MyItems from "./pages/MyItems";
 import NotFound from "./pages/NotFound";
@@ -30,8 +30,8 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
-              <Route path="/list-item" element={<ListItemWizard />} />
-              <Route path="/list-item-legacy" element={<ListItem />} />
+              <Route path="/create-item" element={<CreateItem />} />
+              <Route path="/edit-item/:itemId" element={<EditItem />} />
               <Route path="/item/:itemId" element={<ItemDetail />} />
               <Route path="/my-items" element={<MyItems />} />
               <Route path="/profile" element={<Profile />} />

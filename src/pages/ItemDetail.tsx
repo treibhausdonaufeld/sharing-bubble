@@ -1,32 +1,30 @@
-import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { ItemOwnersManager } from "@/components/items/ItemOwnersManager";
+import { RequestDialog } from "@/components/items/RequestDialog";
 import { Header } from "@/components/layout/Header";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { 
-  ArrowLeft, 
-  Edit3, 
-  Trash2, 
-  MessageCircle, 
-  ShoppingCart, 
-  Calendar,
-  MapPin, 
-  Star, 
-  Euro,
-  Clock,
-  Heart
-} from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useItem } from "@/hooks/useItem";
-import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
-import { RequestDialog } from "@/components/items/RequestDialog";
-import { ItemOwnersManager } from "@/components/items/ItemOwnersManager";
+import { useAuth } from "@/hooks/useAuth";
+import { useItem } from "@/hooks/useItem";
 import { useItemOwners } from "@/hooks/useItemOwners";
+import { cn } from "@/lib/utils";
+import {
+  ArrowLeft,
+  Calendar,
+  Clock,
+  Edit3,
+  Euro,
+  MessageCircle,
+  ShoppingCart,
+  Star,
+  Trash2
+} from "lucide-react";
+import { useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
 const ItemDetail = () => {
   const { itemId } = useParams<{ itemId: string }>();
@@ -61,7 +59,7 @@ const ItemDetail = () => {
   };
 
   const handleEditItem = () => {
-    navigate(`/list-item?edit=${itemId}`);
+    navigate(`/edit-item/${itemId}`);
   };
 
   const handleDeleteItem = async () => {

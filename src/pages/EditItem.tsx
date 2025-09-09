@@ -1,22 +1,22 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { ImageManager } from '@/components/items/ImageManager';
+import { Header } from '@/components/layout/Header';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
-import { Header } from '@/components/layout/Header';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
-import { ImageManager } from '@/components/items/ImageManager';
-import { useLanguage } from '@/contexts/LanguageContext';
 import { ArrowLeft } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 
-const ListItem = () => {
+const EditItem = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -276,12 +276,12 @@ const ListItem = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>{editItemId ? t('itemDetail.editItem') : t('listItem.title')}</CardTitle>
+            <CardTitle>{editItemId ? t('itemDetail.editItem') : t('editItem.title')}</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="title">{t('listItem.itemName')}</Label>
+                <Label htmlFor="title">{t('editItem.itemName')}</Label>
                 <Input
                   id="title"
                   value={formData.title}
@@ -292,22 +292,22 @@ const ListItem = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">{t('listItem.description')}</Label>
+                <Label htmlFor="description">{t('editItem.description')}</Label>
                 <Textarea
                   id="description"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder={t('listItem.descriptionPlaceholder')}
+                  placeholder={t('editItem.descriptionPlaceholder')}
                   rows={4}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>{t('listItem.selectCategory')}</Label>
+                  <Label>{t('editItem.selectCategory')}</Label>
                   <Select value={formData.category} onValueChange={(value) => setFormData({...formData, category: value as Database['public']['Enums']['item_category']})}>
                     <SelectTrigger>
-                      <SelectValue placeholder={t('listItem.selectCategory')} />
+                      <SelectValue placeholder={t('editItem.selectCategory')} />
                     </SelectTrigger>
                     <SelectContent>
                       {categories.map((category) => (
@@ -320,10 +320,10 @@ const ListItem = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>{t('listItem.selectCondition')}</Label>
+                  <Label>{t('editItem.selectCondition')}</Label>
                   <Select value={formData.condition} onValueChange={(value) => setFormData({...formData, condition: value as Database['public']['Enums']['item_condition']})}>
                     <SelectTrigger>
-                      <SelectValue placeholder={t('listItem.selectCondition')} />
+                      <SelectValue placeholder={t('editItem.selectCondition')} />
                     </SelectTrigger>
                     <SelectContent>
                       {conditions.map((condition) => (
@@ -414,7 +414,7 @@ const ListItem = () => {
               </div>
 
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? t('common.loading') : (editItemId ? t('common.save') : t('listItem.shareItem'))}
+                {loading ? t('common.loading') : (editItemId ? t('common.save') : t('editItem.shareItem'))}
               </Button>
             </form>
           </CardContent>
@@ -424,4 +424,4 @@ const ListItem = () => {
   );
 };
 
-export default ListItem;
+export default EditItem;

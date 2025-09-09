@@ -30,7 +30,7 @@ interface WizardData {
   tempItemId?: string;
 }
 
-const ListItemWizard = () => {
+const CreateItem = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -274,4 +274,4 @@ const ListItemWizard = () => {
   );
 };
 
-export default ListItemWizard;
+export default CreateItem;
