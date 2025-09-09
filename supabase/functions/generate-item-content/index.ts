@@ -38,26 +38,15 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
-    const { jobId, primaryImageUrl, userLanguage = "en" } = await req.json();
+    const { itemId, primaryImageUrl, userLanguage = "en" } = await req.json();
 
-    if (!jobId || !primaryImageUrl) {
+    if (!itemId || !primaryImageUrl) {
       throw new Error("Job ID and primary image URL are required");
     }
 
     console.log(
-      `Generating AI content for job: ${jobId} with image: ${primaryImageUrl} in language: ${userLanguage}`,
+      `Generating AI content for job: ${itemId} with image: ${primaryImageUrl} in language: ${userLanguage}`,
     );
-
-    // Get the processing job
-    const { data: job, error: jobError } = await supabase
-      .from("item_processing_jobs")
-      .select("*")
-      .eq("id", jobId)
-      .single();
-
-    if (jobError || !job) {
-      throw new Error(`Job not found: ${jobId}`);
-    }
 
     // Helpers to work with Supabase Storage URLs in local dev
     const parsePublicStorageUrl = (imageUrl: string):
@@ -141,14 +130,14 @@ serve(async (req) => {
     }
 
     // Use Deno std base64 encoder to avoid stack overflow on large images
-  const imageBuffer = await imageResponse.arrayBuffer();
-  const base64Image = base64Encode(imageBuffer); // encode ArrayBuffer directly
+    const imageBuffer = await imageResponse.arrayBuffer();
+    const base64Image = base64Encode(imageBuffer); // encode ArrayBuffer directly
 
     const mimeType = imageResponse.headers.get("content-type") || "image/jpeg";
 
     // Generate AI content using Google Gemini
     console.log("Calling Google Gemini API...");
-  const aiContent = await generateAIContent(
+    const aiContent = await generateAIContent(
       base64Image,
       mimeType,
       userLanguage,
@@ -210,7 +199,7 @@ serve(async (req) => {
     }
 
     // Persist suggestions onto the item row if we know the item id
-    if (job.item_id) {
+    if (itemId) {
       const { error: itemUpdateErr } = await supabase
         .from("items")
         .update({
@@ -221,30 +210,19 @@ serve(async (req) => {
           listing_type: listingType,
           sale_price,
         })
-        .eq("id", job.item_id);
+        .eq("id", itemId);
 
       if (itemUpdateErr) {
         console.warn("Failed to update item with AI suggestions:", itemUpdateErr);
       }
     }
 
-    // Update the job with AI-generated content
-    await supabase
-      .from("item_processing_jobs")
-      .update({
-        ai_generated_title: aiContent.title,
-        ai_generated_description: aiContent.description,
-        status: "completed",
-        processing_completed_at: new Date().toISOString(),
-      })
-      .eq("id", jobId);
-
-    console.log(`AI content generation completed for job: ${jobId}`);
+    console.log(`AI content generation completed for job: ${itemId}`);
 
     return new Response(
       JSON.stringify({
         success: true,
-        jobId,
+        itemId,
         aiGeneratedTitle: aiContent.title,
         aiGeneratedDescription: aiContent.description,
         aiGeneratedCategory: category,
@@ -256,33 +234,6 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error("Error in generate-item-content function:", error);
-
-    // Update job status to failed
-    try {
-      const body = await req.clone().json();
-      const { jobId } = body;
-
-      if (jobId) {
-        const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-        const supabaseServiceRoleKey = Deno.env.get(
-          "SUPABASE_SERVICE_ROLE_KEY",
-        )!;
-        const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
-
-        await supabase
-          .from("item_processing_jobs")
-          .update({
-            status: "failed",
-            error_message: error instanceof Error
-              ? error.message
-              : "AI content generation failed",
-            processing_completed_at: new Date().toISOString(),
-          })
-          .eq("id", jobId);
-      }
-    } catch (updateError) {
-      console.error("Error updating job status:", updateError);
-    }
 
     return new Response(
       JSON.stringify({

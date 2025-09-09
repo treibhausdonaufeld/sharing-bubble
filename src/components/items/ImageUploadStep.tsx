@@ -5,10 +5,9 @@ import { Progress } from '@/components/ui/progress';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { useImageProcessing } from '@/hooks/useImageProcessing';
 import { supabase } from '@/integrations/supabase/client';
 import { ArrowRight, CheckCircle, Loader, SkipForward, Sparkles, Upload } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ImageManager } from './ImageManager';
 
@@ -22,12 +21,15 @@ export const ImageUploadStep = ({ onBack }: ImageUploadStepProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { language } = useLanguage();
-  const { createProcessingJob } = useImageProcessing();
   const { user } = useAuth();
   
   const [images, setImages] = useState<{ url: string; file: File }[]>([]);
   const [processingState, setProcessingState] = useState<ProcessingState>('idle');
   const [progress, setProgress] = useState(0);
+  const [activeItemId, setActiveItemId] = useState<string | null>(null);
+  const timeoutRef = useRef<number | null>(null); // retained if future timeout needed
+  const intervalRef = useRef<number | null>(null); // retained for progress animation
+  const navigatedRef = useRef(false);
 
   const handleSkipImages = () => {
     createDraftAndNavigate(false);
@@ -76,35 +78,6 @@ export const ImageUploadStep = ({ onBack }: ImageUploadStepProps) => {
     return uploadedImages;
   }, [images]);
 
-  const invokeAI = useCallback(
-    async (jobIdArg: string, primaryImageUrl: string) => {
-      const { data, error } = await supabase.functions.invoke('generate-item-content', {
-        body: {
-          jobId: jobIdArg,
-          primaryImageUrl,
-          userLanguage: language,
-        },
-      });
-
-      if (error) {
-        throw error;
-      }
-      if (!data?.success) {
-        throw new Error(data?.details || 'AI function did not return success');
-      }
-
-      return {
-        title: data.aiGeneratedTitle as string,
-        description: data.aiGeneratedDescription as string,
-        category: data.aiGeneratedCategory as string | undefined,
-        condition: data.aiGeneratedCondition as string | undefined,
-        listing_type: data.aiGeneratedListingType as string | undefined,
-        sale_price: (data.aiGeneratedSalePrice ?? null) as number | null,
-      };
-    },
-    [language]
-  );
-
   const createDraftAndNavigate = useCallback(async (withAI: boolean) => {
     if (images.length === 0 && withAI) {
       toast({
@@ -148,25 +121,51 @@ export const ImageUploadStep = ({ onBack }: ImageUploadStepProps) => {
 
       if (withAI && uploadedImages.length > 0) {
         setProcessingState('processing');
-        setProgress(70);
-        
-        createProcessingJob(newItemId, uploadedImages, language).then(job => {
-          if (job?.id) {
-            invokeAI(job.id, uploadedImages[0].url)
-              .then(() => {
-                console.log(`AI processing completed for item ${newItemId}`);
-              })
-              .catch(err => {
-                console.error("Background AI processing failed:", err);
-              });
-          }
-        }).catch(err => {
-            console.error("Failed to create processing job:", err);
+        setProgress(65);
+        setActiveItemId(newItemId); // keeps UI in sync, but don't rely on it for immediate navigation
+        toast({
+          title: 'Item created',
+            description: 'Generating AI content…',
         });
+
+        try {
+          // Light progress animation while waiting (65 -> 90)
+          if (intervalRef.current) window.clearInterval(intervalRef.current);
+          intervalRef.current = window.setInterval(() => {
+            setProgress(prev => (prev < 90 ? prev + 1 : prev));
+          }, 600);
+
+          const primaryImageUrl = uploadedImages[0].url;
+          const { data: aiData, error: invokeError } = await supabase.functions.invoke('generate-item-content', {
+            body: { itemId: newItemId, primaryImageUrl, userLanguage: language }
+          });
+
+          if (invokeError || !aiData?.success) {
+            console.error('AI generation failed:', invokeError || aiData);
+            toast({
+              title: 'AI Failed',
+              description: 'Continuing without AI suggestions.',
+              variant: 'destructive'
+            });
+            handleAICompletion('failed', newItemId);
+          } else {
+            handleAICompletion('completed', newItemId);
+          }
+        } catch (err) {
+          console.error('AI invocation exception:', err);
+          toast({
+            title: 'AI Error',
+            description: 'Opening editor so you can fill details manually.',
+            variant: 'destructive'
+          });
+          handleAICompletion('failed', newItemId);
+        }
+        return; // stop normal navigation; handleAICompletion will navigate
       }
-      
+
+      // Non-AI path: navigate immediately
       toast({
-        title: "Draft Created",
+        title: "Item created",
         description: "Redirecting to edit your item details...",
       });
       navigate(`/edit-item/${newItemId}`);
@@ -180,7 +179,7 @@ export const ImageUploadStep = ({ onBack }: ImageUploadStepProps) => {
         variant: "destructive",
       });
     }
-  }, [user, images, language, uploadImagesToStorage, createProcessingJob, invokeAI, navigate, toast]);
+  }, [user, images, language, uploadImagesToStorage, navigate, toast]);
 
   const handleSkipAI = () => {
     createDraftAndNavigate(false);
@@ -189,6 +188,51 @@ export const ImageUploadStep = ({ onBack }: ImageUploadStepProps) => {
   const handleProceedWithAI = () => {
     createDraftAndNavigate(true);
   };
+
+  const cleanupTimers = () => {
+    if (intervalRef.current) {
+      window.clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    if (timeoutRef.current) {
+      window.clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  };
+
+  const handleAICompletion = (reason: 'completed' | 'failed' | 'timeout', itemId?: string) => {
+    if (navigatedRef.current) return;
+    navigatedRef.current = true;
+    cleanupTimers();
+    setProgress(100);
+    setProcessingState('completed');
+    if (reason === 'completed') {
+      toast({
+        title: 'AI Ready',
+        description: 'Content generated. Opening details...',
+      });
+    } else if (reason === 'timeout') {
+      toast({
+        title: 'Taking Longer',
+        description: 'Opening editor while AI finishes in background.',
+      });
+    } else {
+      toast({
+        title: 'AI Failed',
+        description: 'Opening editor so you can fill details manually.',
+        variant: 'destructive'
+      });
+    }
+    const targetId = itemId || activeItemId;
+    if (targetId) navigate(`/edit-item/${targetId}`);
+  };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      cleanupTimers();
+    };
+  }, []);
 
   const getProcessingMessage = () => {
     switch (processingState) {
@@ -244,6 +288,9 @@ export const ImageUploadStep = ({ onBack }: ImageUploadStepProps) => {
                 <span className="text-sm font-medium">{getProcessingMessage()}</span>
               </div>
               <Progress value={progress} className="w-full" />
+              {processingState === 'processing' && activeItemId && (
+                <p className="text-xs text-muted-foreground">Generating AI content…</p>
+              )}
             </div>
           )}
 

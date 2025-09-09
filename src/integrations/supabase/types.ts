@@ -133,59 +133,6 @@ export type Database = {
         }
         Relationships: []
       }
-      item_processing_jobs: {
-        Row: {
-          ai_generated_description: string | null
-          ai_generated_title: string | null
-          created_at: string
-          error_message: string | null
-          id: string
-          item_id: string | null
-          original_images: Json | null
-          processing_completed_at: string | null
-          processing_started_at: string | null
-          status: string
-          thumbnail_images: Json | null
-          updated_at: string
-        }
-        Insert: {
-          ai_generated_description?: string | null
-          ai_generated_title?: string | null
-          created_at?: string
-          error_message?: string | null
-          id?: string
-          item_id?: string | null
-          original_images?: Json | null
-          processing_completed_at?: string | null
-          processing_started_at?: string | null
-          status?: string
-          thumbnail_images?: Json | null
-          updated_at?: string
-        }
-        Update: {
-          ai_generated_description?: string | null
-          ai_generated_title?: string | null
-          created_at?: string
-          error_message?: string | null
-          id?: string
-          item_id?: string | null
-          original_images?: Json | null
-          processing_completed_at?: string | null
-          processing_started_at?: string | null
-          status?: string
-          thumbnail_images?: Json | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "item_processing_jobs_item_id_fkey"
-            columns: ["item_id"]
-            isOneToOne: false
-            referencedRelation: "items"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       item_requests: {
         Row: {
           counter_end_date: string | null

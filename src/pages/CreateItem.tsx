@@ -6,7 +6,6 @@ import { Progress } from '@/components/ui/progress';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { useImageProcessing } from '@/hooks/useImageProcessing';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
 import { ArrowLeft } from 'lucide-react';
@@ -34,7 +33,6 @@ const CreateItem = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { createProcessingJob: createImageProcessingJob } = useImageProcessing();
   const { language } = useLanguage();
   const [currentStep, setCurrentStep] = useState<WizardStep>('images');
   const [wizardData, setWizardData] = useState<WizardData>({
@@ -68,23 +66,6 @@ const CreateItem = () => {
       .eq('item_id', oldItemId);
 
     if (error) throw error;
-  };
-
-  const updateProcessingJob = async (oldItemId: string, newItemId: string) => {
-    if (wizardData.skipAI || wizardData.skipImages || !wizardData.images?.length) return;
-
-    try {
-      // Update processing job to point to the new item
-      const { error } = await supabase
-        .from('item_processing_jobs')
-        .update({ item_id: newItemId })
-        .eq('item_id', oldItemId);
-
-      if (error) throw error;
-    } catch (error) {
-      console.error('Error updating processing job:', error);
-      // Non-blocking error - don't fail the item creation
-    }
   };
 
   const handleDetailsComplete = async (formData: ItemFormData) => {
