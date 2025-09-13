@@ -109,11 +109,6 @@ export const ImageUploadStep = ({ onBack }: ImageUploadStepProps) => {
       if (itemError) throw itemError;
       const newItemId = item.id;
 
-      const { error: ownerErr } = await supabase
-        .from('item_owners')
-        .insert({ item_id: newItemId, user_id: user!.id, role: 'owner' });
-      if (ownerErr) throw ownerErr;
-
       setProgress(30);
 
       const uploadedImages = await uploadImagesToStorage(newItemId, images);

@@ -107,17 +107,6 @@ const CreateItem = () => {
 
       if (itemError) throw itemError;
 
-      // Create ownership record
-      const { error: ownerError } = await supabase
-        .from('item_owners')
-        .insert({
-          item_id: item.id,
-          user_id: user.id,
-          role: 'owner'
-        });
-
-      if (ownerError) throw ownerError;
-
       // If we have a temporary item from AI processing, transfer its data
       if (wizardData.tempItemId) {
         // Update image records to point to the new item
