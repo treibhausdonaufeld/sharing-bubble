@@ -1,8 +1,7 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "./useAuth";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useEffect } from "react";
+import { useAuth } from "./useAuth";
 
 export interface ItemRequest {
   id: string;
@@ -28,11 +27,11 @@ export interface ItemRequest {
     rental_price?: number;
     rental_period?: string;
   };
-  requester_profile?: {
+  requester_id?: {
     display_name: string;
     avatar_url?: string;
   };
-  owner_profile?: {
+  owner_id?: {
     display_name: string;
     avatar_url?: string;
   };
@@ -59,11 +58,11 @@ export const useItemRequests = (itemId?: string) => {
             rental_price,
             rental_period
           ),
-          requester_profile:profiles!requester_id!inner (
+          requester_id:profiles!requester_id!inner (
             display_name,
             avatar_url
           ),
-          owner_profile:profiles!owner_id!inner (
+          owner_id:profiles!owner_id!inner (
             display_name,
             avatar_url
           )
@@ -95,7 +94,7 @@ export const useItemRequests = (itemId?: string) => {
               rental_price,
               rental_period
             ),
-            owner_profile:profiles!owner_id!inner (
+            owner_id:profiles!owner_id!inner (
               display_name,
               avatar_url
             )
@@ -114,7 +113,7 @@ export const useItemRequests = (itemId?: string) => {
               rental_price,
               rental_period
             ),
-            requester_profile:profiles!requester_id!inner (
+            requester_id:profiles!requester_id!inner (
               display_name,
               avatar_url
             )
@@ -229,31 +228,31 @@ export const useItemRequests = (itemId?: string) => {
   });
 
   // Real-time subscription for requests
-  useEffect(() => {
-    if (!user?.id) return;
+  // useEffect(() => {
+  //   if (!user?.id) return;
 
-    const channel = supabase
-      .channel("item-requests-changes")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "item_requests",
-        },
-        (payload) => {
-          // Invalidate relevant queries when requests change
-          queryClient.invalidateQueries({ queryKey: ["item-requests"] });
-          queryClient.invalidateQueries({ queryKey: ["user-requests"] });
-          queryClient.invalidateQueries({ queryKey: ["conversations"] });
-        }
-      )
-      .subscribe();
+  //   const channel = supabase
+  //     .channel("item-requests-changes")
+  //     .on(
+  //       "postgres_changes",
+  //       {
+  //         event: "*",
+  //         schema: "public",
+  //         table: "item_requests",
+  //       },
+  //       (payload) => {
+  //         // Invalidate relevant queries when requests change
+  //         queryClient.invalidateQueries({ queryKey: ["item-requests"] });
+  //         queryClient.invalidateQueries({ queryKey: ["user-requests"] });
+  //         queryClient.invalidateQueries({ queryKey: ["conversations"] });
+  //       }
+  //     )
+  //     .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user?.id, queryClient]);
+  //   return () => {
+  //     supabase.removeChannel(channel);
+  //   };
+  // }, [user?.id, queryClient]);
 
   return {
     requests: requests.data || [],

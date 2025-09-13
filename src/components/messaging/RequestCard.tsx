@@ -1,19 +1,18 @@
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Calendar, Euro, Clock, Check, X, MessageSquare } from "lucide-react";
-import { formatDistanceToNow, format } from "date-fns";
-import { cn } from "@/lib/utils";
-import { ItemRequest, useItemRequests } from "@/hooks/useItemRequests";
-import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import { CalendarIcon } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { ItemRequest, useItemRequests } from "@/hooks/useItemRequests";
+import { cn } from "@/lib/utils";
+import { format, formatDistanceToNow } from "date-fns";
+import { Calendar, CalendarIcon, Check, Clock, Euro, MessageSquare, X } from "lucide-react";
+import { useState } from "react";
 
 interface RequestCardProps {
   request: ItemRequest;
@@ -30,7 +29,7 @@ export const RequestCard = ({ request, currentUserId, onMessage }: RequestCardPr
   const [counterEndDate, setCounterEndDate] = useState<Date>();
 
   const isOwner = request.owner_id === currentUserId;
-  const otherUser = isOwner ? request.requester_profile : request.owner_profile;
+  const otherUser = isOwner ? request.requester_id : request.owner_id;
 
   const statusColors = {
     pending: "bg-warning text-warning-foreground",
