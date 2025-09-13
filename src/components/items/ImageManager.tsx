@@ -69,10 +69,10 @@ export const ImageManager = ({
         });
         continue;
       }
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      if (file.size > 20 * 1024 * 1024) { // 20MB limit
         toast({
           title: "File too large",
-          description: "Images must be smaller than 5MB",
+          description: "Images must be smaller than 20MB",
           variant: "destructive",
         });
         continue;

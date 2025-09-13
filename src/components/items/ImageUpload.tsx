@@ -1,10 +1,9 @@
-import { useState, useCallback } from 'react';
-import { Upload, X, Image } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Image, X } from 'lucide-react';
+import { useCallback, useState } from 'react';
 
 interface ImageUploadProps {
   onImagesChange: (images: { url: string; file: File }[]) => void;
@@ -40,10 +39,10 @@ export const ImageUpload = ({ onImagesChange, maxImages = 5 }: ImageUploadProps)
         continue;
       }
 
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      if (file.size > 20 * 1024 * 1024) { // 20MB limit
         toast({
           title: "File too large",
-          description: "Images must be smaller than 5MB",
+          description: "Images must be smaller than 20MB",
           variant: "destructive",
         });
         continue;
